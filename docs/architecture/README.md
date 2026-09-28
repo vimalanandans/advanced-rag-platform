@@ -1,3 +1,4 @@
 # Architecture Reference
 
-See `ARCHITECTURE.md` and the ADRs. This directory holds detailed graph, execution, component, context, and portability designs.
+Read the [system architecture](system.md) for the dependency boundary, local service diagram, and evidence-first
+execution flow. See `ARCHITECTURE.md` and the [ADRs](../adr/) for governing decisions.
