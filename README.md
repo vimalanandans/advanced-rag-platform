@@ -1,44 +1,92 @@
 # RAG Engineering Workbench
 
-A local-first reference platform for engineering, running, inspecting, and evaluating
-versioned RAG pipelines. It treats RAG as an evidence-selection system: every answer
-is grounded in permitted evidence with inspectable provenance, or explicitly abstains.
+**Build RAG systems as evidence-selection systems, not chat models attached to a vector database.**
+
+The RAG Engineering Workbench is a local-first reference platform for engineering, running, inspecting, and
+evaluating versioned RAG pipelines. It makes the questions that matter operational: Which evidence was allowed
+in? Which retrieval lane found it? What fit the context budget? Why did the system answer—or abstain?
+
+Every run produces inspectable citations or an explicit abstention, plus a graph fingerprint, component and
+provider versions, budget usage, and safe node-level trace metadata.
+
+## What you can do today
+
+- Run a validated baseline graph with lexical/BM25, dense, and vectorless structural retrieval.
+- Fuse, verify, and pack approved evidence before local generation.
+- Ingest Markdown and PDF evidence with source, revision, section/page locator, and policy metadata.
+- Inspect response, citations, context usage, node activity, errors, and persisted run manifests in Studio.
+- Compare behavior with deterministic golden fixtures and the baseline evaluation endpoint.
+- Choose deterministic local execution by default, or explicitly select local Qdrant and Ollama adapters.
 
 ## Who it is for
 
-RAG Product Owners compare strategies and releases; Data Engineers configure corpora and
-retrieval lanes; Developers add independently composable components; Operators inspect
-traces, budgets, errors, and evaluation regressions.
+RAG product owners use it to compare strategies; data engineers use it to preserve trustworthy evidence;
+developers use it to add composable components; operators use it to reproduce and diagnose runs. Read
+[Product Goals](Goals.md) for the intended outcomes and deliberate non-goals.
 
-## Quick start
+## Start in the right mode
+
+### Deterministic local development
+
+Use this mode for the first run, regression fixtures, and fast iteration. It needs Python and Node.js but no
+Docker, Qdrant, or model download.
+
+```bash
+python -m venv .venv
+.venv/bin/pip install -e '.[dev]'
+npm --prefix apps/studio ci
+```
+
+Continue with the [first local run guide](docs/user-guide/first-local-run.md).
+
+### Full local Compose stack
+
+Use this mode when you need PostgreSQL trace storage or want to exercise local Qdrant/Ollama adapters.
 
 ```bash
 docker compose up --build
 ```
 
-The control API is available at `http://localhost:8000/docs`; the Studio is at
-`http://localhost:5173`. The stack is local: PostgreSQL, MinIO, Qdrant, Ollama, an API,
-a worker, and the Studio. Pull an Ollama model before using live generation; tests use a
-deterministic local generator and do not require a model download.
+The control API is available at `http://localhost:8000/docs`; Studio is at `http://localhost:5173`. The
+deterministic profile remains the default. Pull an Ollama model only before selecting the Ollama provider
+profile; see the [operations guide](docs/operations/README.md).
 
-## Core model
+## How the baseline works
 
-Pipeline YAML compiles into a versioned `PipelineGraph` IR. The graph, not a component,
-owns sequencing, branching, retries, and bounded loops. Components publish typed,
-versioned capability manifests. Provider adapters isolate models, storage, vector stores,
-and exporters. Every run records a graph fingerprint, versions, evidence, budget usage,
-and trace events.
+```text
+question
+  → authorize evidence
+  → BM25 + dense + vectorless retrieval
+  → reciprocal-rank fusion
+  → evidence verification
+  → bounded context assembly
+  → cited answer or explicit abstention
+```
 
-The baseline pipeline runs lexical/BM25, dense, and vectorless hierarchical retrieval,
-then verifies evidence, packs bounded context, and returns cited output or abstention.
+The `PipelineGraph`, not individual components, owns sequencing, branching, retries, and bounded loops.
+Components publish typed, versioned manifests; providers stay behind provider-neutral interfaces. This is what
+makes an execution reproducible and a provider replaceable.
+
+## Documentation
+
+Start from the [documentation index](docs/README.md):
+
+- [Product goals](Goals.md) — users, outcomes, and non-goals.
+- [System architecture](docs/architecture/system.md) — dependency boundaries and execution flow.
+- [API reference](docs/api/README.md) — local control endpoints and request scope.
+- [Configuration reference](docs/reference/configuration.md) — profile, storage, and Studio settings.
+- [Definition of Done](docs/definition-of-done/README.md) — what must be true before a change is accepted.
+- [Advanced RAG Strategies](ADVANCED_RAG_STRATEGIES.md) — when to add a technique after measurement.
 
 ## Repository map
 
-- `rag_workbench/` — contracts, graph compiler/runtime, retrieval, ingestion, APIs, and evaluation.
-- `configs/pipelines/` — versioned declarative pipelines.
-- `data/fixtures/` and `data/golden/` — small licensed deterministic examples and expected behavior.
-- `apps/studio/` — inspector-oriented React/TypeScript workbench.
-- `docs/` — architecture, ADRs, security, test/evaluation, and operating guidance.
+| Path | Purpose |
+| --- | --- |
+| `rag_workbench/` | Contracts, graph compiler/runtime, retrieval, ingestion, APIs, and evaluation. |
+| `configs/pipelines/` | Versioned declarative pipeline definitions. |
+| `data/fixtures/`, `data/golden/` | Licensed deterministic evidence and expected behavior. |
+| `apps/studio/` | Inspector-oriented React/TypeScript workbench. |
+| `docs/` | Product, architecture, API, operating, security, and quality guidance. |
 
-Read [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) before changing behavior.
-The acceptance standard is defined in [Definition of Done](docs/definition-of-done/README.md).
+Read [AGENTS.md](AGENTS.md) before changing behavior. It contains the engineering rules that preserve the
+workbench’s local-first, evidence-first architecture.

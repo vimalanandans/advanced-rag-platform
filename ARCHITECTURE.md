@@ -1,21 +1,33 @@
-# Architecture
+# Architecture Principles
+
+The workbench is designed to make evidence-grounded RAG behavior inspectable and portable. The detailed
+diagrams and runtime flow are in [System Architecture](docs/architecture/system.md); this page records the
+decisions every change must preserve.
 
 ## Dependency direction
 
 `Studio/API → control and runtime services → contracts, graph engine, registries → components → providers`.
-Dependencies point inward. Providers implement contracts and cannot define domain behavior.
 
-## Planes
+Dependencies point inward. A provider adapter can implement a local model, vector index, or trace store, but it
+cannot define a domain contract, change graph behavior, or leak provider-specific objects to a caller.
 
-- **Control plane:** pipeline versions, components/capabilities, corpora, configuration, datasets, and releases.
-- **Execution plane:** PipelineGraph compiler, scheduler, bounded executor, context/budget manager, and run manifest.
-- **Capability plane:** ingestion, retrieval, fusion, verification, context packing, generation, and abstention.
-- **Observability/evaluation plane:** local traces, metrics, golden datasets, experiments, and regressions.
+## Four planes
 
-## Configuration layers
+| Plane | Responsibility | Primary output |
+| --- | --- | --- |
+| Control | Pipeline versions, component catalog, configuration, datasets, and releases | Validated graph and chosen run configuration |
+| Execution | Compiler, bounded scheduler, context/budget management, checkpointing | Reproducible `RunResult` and manifest |
+| Capability | Ingestion, retrieval, fusion, verification, context packing, generation | Authorized candidate evidence and cited answer/abstention |
+| Observability and evaluation | Traces, metrics, fixtures, experiments, regressions | Evidence for accepting or rejecting a strategy |
 
-- Platform configuration defines local infrastructure and installed providers.
-- Customer configuration defines allowed corpora, models, skills, policies, and budgets.
-- Pipeline configuration defines graph nodes, edges, versions, and component configuration.
+## Configuration ownership
 
-The current release runs one local administrator while retaining customer/ACL fields in its contracts.
+| Layer | Owns | Must not own |
+| --- | --- | --- |
+| Platform | local infrastructure, installed providers, storage, CORS | customer policy or graph semantics |
+| Customer | permitted corpora, policy, data, evaluation sets, budgets | forked shared domain code |
+| Pipeline | graph nodes, edges, versions, component configuration | credentials, provider implementation values, customer secrets |
+
+The current release runs one local administrator while retaining tenant/corpus/ACL fields in its contracts for
+future use. See [ADRs](docs/adr/) for decisions and [Definition of Done](docs/definition-of-done/README.md) for
+the acceptance standard.

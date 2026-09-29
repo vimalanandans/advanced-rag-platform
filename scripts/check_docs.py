@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import ast
+import re
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +28,7 @@ REQUIRED_ENVIRONMENT_VARIABLES = (
     "VITE_API_URL",
     "VITE_PROXY_TARGET",
 )
+LINK_PATTERN = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
 
 
 def extract_routes(source: Path) -> set[tuple[str, str]]:
@@ -45,6 +48,23 @@ def extract_routes(source: Path) -> set[tuple[str, str]]:
     return routes
 
 
+def local_markdown_link_errors(root: Path) -> list[str]:
+    """Return missing relative Markdown links without probing external URLs."""
+    errors: list[str] = []
+    documents = [root / name for name in ("README.md", "Goals.md", "ARCHITECTURE.md", "CONTRIBUTING.md", "SECURITY.md")]
+    documents.extend((root / "docs").rglob("*.md"))
+    for document in documents:
+        if not document.exists():
+            continue
+        for target in LINK_PATTERN.findall(document.read_text(encoding="utf-8")):
+            target = target.split("#", 1)[0].strip().strip("<>")
+            if not target or urlparse(target).scheme or target.startswith("/"):
+                continue
+            if not (document.parent / target).resolve().exists():
+                errors.append(f"{document.relative_to(root)} links to missing {target}")
+    return errors
+
+
 def main() -> int:
     errors: list[str] = []
     api_reference = API_DOC.read_text(encoding="utf-8")
@@ -61,6 +81,7 @@ def main() -> int:
     for path in ("api/README.md", "architecture/system.md", "reference/configuration.md", "user-guide/first-local-run.md"):
         if path not in index:
             errors.append(f"Documentation index is missing {path}")
+    errors.extend(local_markdown_link_errors(ROOT))
 
     if errors:
         print("Documentation validation failed:", *errors, sep="\n- ")
