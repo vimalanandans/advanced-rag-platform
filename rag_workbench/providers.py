@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
-import json
 import ipaddress
+import json
 from dataclasses import dataclass
 from typing import Protocol
-from urllib.parse import urlparse
 from urllib.error import HTTPError
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 
 class VectorIndex(Protocol):
     def create_index(self, dimensions: int) -> None: ...
     def upsert(self, point_id: str, vector: list[float], payload: dict) -> None: ...
-    def search(self, vector: list[float], limit: int = 5) -> list[dict]: ...
+    def search(self, vector: list[float], limit: int = 5, *, allowed_point_ids: list[str]) -> list[dict]: ...
     def health(self) -> bool: ...
 
 
@@ -28,7 +28,10 @@ class QdrantVectorIndex:
     def create_index(self, dimensions: int) -> None:
         """Create the collection once, without overwriting an existing local index."""
         try:
-            self._request("GET", f"/collections/{self.collection}")
+            existing = self._request("GET", f"/collections/{self.collection}")
+            vectors = existing.get("result", {}).get("config", {}).get("params", {}).get("vectors", {})
+            if vectors.get("size") != dimensions or vectors.get("distance") != "Cosine":
+                raise ValueError("vector collection is incompatible; create a new versioned index")
             return
         except HTTPError as error:
             if error.code != 404:
@@ -38,14 +41,16 @@ class QdrantVectorIndex:
     def upsert(self, point_id: str, vector: list[float], payload: dict) -> None:
         self._request("PUT", f"/collections/{self.collection}/points?wait=true", {"points": [{"id": point_id, "vector": vector, "payload": payload}]})
 
-    def search(self, vector: list[float], limit: int = 5) -> list[dict]:
-        response = self._request("POST", f"/collections/{self.collection}/points/search", {"vector": vector, "limit": limit, "with_payload": True})
+    def search(self, vector: list[float], limit: int = 5, *, allowed_point_ids: list[str]) -> list[dict]:
+        if not allowed_point_ids:
+            return []
+        response = self._request("POST", f"/collections/{self.collection}/points/search", {"vector": vector, "limit": limit, "with_payload": True, "filter": {"must": [{"has_id": allowed_point_ids}]}})
         return response.get("result", [])
 
     def health(self) -> bool:
         try:
-            return self._request("GET", "/healthz").get("title") == "qdrant - vector search engine"
-        except OSError:
+            return self._request("GET", "/").get("title") == "qdrant - vector search engine"
+        except (OSError, ValueError, TypeError, AttributeError):
             return False
 
     def _request(self, method: str, path: str, payload: dict | None = None) -> dict:
@@ -58,14 +63,48 @@ class QdrantVectorIndex:
 class OllamaModelProvider:
     """Optional local generation adapter. The deterministic generator remains the test default."""
 
-    def __init__(self, url: str = "http://localhost:11434", model: str = "llama3.2", allow_remote: bool = False) -> None:
+    def __init__(self, url: str = "http://localhost:11434", model: str = "llama3.2", allow_remote: bool = False, revision: str | None = None,
+                 think: bool | None = None, temperature: float | None = None, context_window: int | None = None) -> None:
         _validate_provider_url(url, allow_remote, {"ollama"})
         self.url, self.model = url.rstrip("/"), model
+        self.revision = revision
+        if temperature is not None and (not isinstance(temperature, (int, float)) or not 0 <= temperature <= 2):
+            raise ValueError("temperature must be between zero and two")
+        if think is not None and not isinstance(think, bool):
+            raise ValueError("think must be a boolean or unspecified")
+        self.think, self.temperature = think, temperature
+        if context_window is not None and (type(context_window) is not int or context_window <= 0):
+            raise ValueError("context window must be a positive integer")
+        self.context_window = context_window
 
-    def generate(self, prompt: str) -> str:
-        request = Request(f"{self.url}/api/generate", data=json.dumps({"model": self.model, "prompt": prompt, "stream": False}).encode(), method="POST", headers={"Content-Type": "application/json"})
-        with urlopen(request, timeout=90) as response:  # nosec B310: explicit local/provider URL
-            return json.loads(response.read())["response"]
+    def _assert_revision(self, timeout: float) -> None:
+        if self.revision is not None:
+            with urlopen(f"{self.url}/api/tags", timeout=timeout) as response:
+                models = json.loads(response.read()).get("models", [])
+            if not any(item.get("name") == self.model and item.get("digest") == self.revision for item in models):
+                raise ValueError("generation model is unavailable or its digest changed")
+
+    def generate(self, prompt: str, *, timeout: float = 90, max_tokens: int | None = None) -> str:
+        if self.context_window is not None and (max_tokens is None or len(prompt.encode()) + max_tokens > self.context_window):
+            raise ValueError("prompt and output reservation exceed explicit context window")
+        self._assert_revision(timeout)
+        payload = {"model": self.model, "prompt": prompt, "stream": False}
+        if self.think is not None:
+            payload["think"] = self.think
+        options = {}
+        if max_tokens is not None:
+            options["num_predict"] = max_tokens
+        if self.temperature is not None:
+            options["temperature"] = self.temperature
+        if self.context_window is not None:
+            options["num_ctx"] = self.context_window
+        if options:
+            payload["options"] = options
+        request = Request(f"{self.url}/api/generate", data=json.dumps(payload).encode(), method="POST", headers={"Content-Type": "application/json"})
+        with urlopen(request, timeout=timeout) as response:  # nosec B310: explicit local/provider URL
+            answer = json.loads(response.read())["response"]
+        self._assert_revision(timeout)
+        return answer
 
 
 @dataclass(frozen=True)

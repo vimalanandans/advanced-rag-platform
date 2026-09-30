@@ -22,8 +22,9 @@ class FakeVectorIndex:
     def upsert(self, point_id: str, vector: list[float], payload: dict) -> None:
         self.points.append({"id": point_id, "vector": vector, "payload": payload})
 
-    def search(self, _vector: list[float], limit: int = 5) -> list[dict]:
-        return [{"payload": point["payload"], "score": 0.9} for point in self.points[:limit]]
+    def search(self, _vector: list[float], limit: int = 5, *, allowed_point_ids: list[str]) -> list[dict]:
+        allowed = [point for point in self.points if point["id"] in allowed_point_ids]
+        return [{"id": point["id"], "payload": point["payload"], "score": 0.9} for point in allowed[:limit]]
 
     def health(self) -> bool:
         return True

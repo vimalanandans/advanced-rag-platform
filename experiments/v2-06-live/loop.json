@@ -1,0 +1,53 @@
+{
+  "task_id": "v2-06-live-provider-configuration",
+  "problem": "Stopped services and implicit provider defaults prevented meaningful live acceptance.",
+  "query_or_content_class": "Three synthetic development query classes",
+  "hypothesis": "Explicit task prefixes, health parsing and bounded generation settings make real runtime checks reproducible.",
+  "baseline": {
+    "arm_a": "3/3 generation timeouts at 15 seconds"
+  },
+  "experiment": {
+    "arm_d": "Explicit prefixes, thinking false, temperature zero, context 8192, 60-second deadline"
+  },
+  "files_changed": [
+    "rag_workbench/providers.py",
+    "rag_workbench/local_real.py",
+    "scripts/run_strategy_comparison.py",
+    "tests/test_real_retrieval.py"
+  ],
+  "commands_run": [
+    "docker compose config --quiet",
+    "docker compose up -d qdrant postgres",
+    "scripts/run_strategy_comparison.py --arm A --split development",
+    "scripts/run_strategy_comparison.py --arm D --split development --max-latency-ms 60000"
+  ],
+  "tests_run": [
+    "108 pytest tests passed"
+  ],
+  "metrics_before": {
+    "completed": 0,
+    "cases": 3
+  },
+  "metrics_after": {
+    "completed": 3,
+    "cases": 3,
+    "expected_passes": 1,
+    "recall_at_5": 1.0,
+    "mrr": 1.0,
+    "latency_ms_range": [
+      1094.96,
+      3314.0
+    ]
+  },
+  "failures": [
+    "Two generated answers failed source-sentence verification; abstained."
+  ],
+  "root_causes": [
+    "Qdrant healthz is text, not JSON.",
+    "Model context default was 131072.",
+    "Model output does not consistently satisfy the conservative verifier."
+  ],
+  "regressions": [],
+  "decision": "iterate",
+  "notes": "Accept provider configuration fixes; reject operational quality promotion. Changed settings and warm state prevent causal performance claims. Full V2 remains incomplete."
+}

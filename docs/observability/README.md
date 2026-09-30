@@ -28,3 +28,8 @@ settings.
 Never log secrets, raw credentials, or evidence the current request is not authorized to see. When debugging a
 bad answer, start with the manifest, source locator, policy filter, lane candidates, and context plan—not a
 full prompt dump.
+
+
+## Terminal-record immutability
+
+Identical terminal writes are idempotent; a different record under an existing run ID raises `TraceConflictError`. JSON publishes atomically without replacing files and rejects non-UUID path components. Memory returns defensive copies. PostgreSQL uses insert-on-conflict-do-nothing and verifies equality; live database acceptance is still outstanding. Error traces retain error type and a safe category, not arbitrary provider exception messages.

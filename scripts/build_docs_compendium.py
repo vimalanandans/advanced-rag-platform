@@ -1,10 +1,9 @@
 """Build docs/doc.md from the Markdown source files under docs/."""
 
-from pathlib import Path
 import os
 import re
+from pathlib import Path
 from urllib.parse import urlparse
-
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"

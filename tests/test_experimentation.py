@@ -6,8 +6,14 @@ from pydantic import ValidationError
 
 from rag_workbench.contracts import RequestContext
 from rag_workbench.experimentation import (
-    DatasetManifest, ExperimentCase, ExperimentRecord, StrategyManifest,
-    corpus_fingerprint, ranking_metrics, run_experiment, write_record,
+    DatasetManifest,
+    ExperimentCase,
+    ExperimentRecord,
+    StrategyManifest,
+    corpus_fingerprint,
+    ranking_metrics,
+    run_experiment,
+    write_record,
 )
 from rag_workbench.graph import pipeline_from_yaml
 from rag_workbench.providers import LocalProviderProfile
@@ -15,9 +21,9 @@ from rag_workbench.runtime import demo_runtime
 
 
 def case(**updates):
-    values = dict(case_id="one", query="query", query_class="semantic", corpus_revision="revision",
-                  source_group="source", split="regression", expected_evidence_ids=["a", "b"],
-                  hard_negative_ids=["negative"])
+    values = {"case_id": "one", "query": "query", "query_class": "semantic", "corpus_revision": "revision",
+              "source_group": "source", "split": "regression", "expected_evidence_ids": ["a", "b"],
+              "hard_negative_ids": ["negative"]}
     return ExperimentCase(**(values | updates))
 
 
@@ -158,3 +164,30 @@ def test_artifact_snapshots_detect_tampering(tmp_path):
     payload["configuration_snapshot"]["k"] = 99
     with pytest.raises(ValidationError, match="configuration snapshot"):
         ExperimentRecord.model_validate(payload)
+
+
+def test_generation_failure_preserves_retrieval_measurement_and_trace(tmp_path):
+    runtime, plan, data, strategy = fixture()
+    def fail(*_args):
+        raise TimeoutError("private-provider-payload")
+    generation = next(node.component for node in plan.pipeline.graph.nodes if node.id == "generate")
+    runtime.registry._executors[generation] = fail
+    record = ExperimentRecord.model_validate_json(execute(tmp_path, runtime, plan, data, strategy).read_text())
+    result = record.case_results[0]
+    assert result["status"] == "failed"
+    assert result["ranked_evidence_ids"]
+    assert result["stage_ranking"]
+    assert result["stage_latency_ms"]["generate"] >= 0
+    assert runtime.trace_store.get(result["run_id"]).status == "failed"
+    assert record.metrics["completed_cases"] == 0
+    assert record.metrics["ranked_cases"] == 1
+    assert "private-provider-payload" not in record.model_dump_json()
+
+
+def test_configuration_fingerprint_includes_provider_options(tmp_path):
+    runtime, plan, data, strategy = fixture()
+    first = ExperimentRecord.model_validate_json(execute(tmp_path / "first", runtime, plan, data, strategy).read_text())
+    runtime.asset_versions["generation_options"] = '{"think": false}'
+    second = ExperimentRecord.model_validate_json(execute(tmp_path / "second", runtime, plan, data, strategy).read_text())
+    assert first.config_fingerprint != second.config_fingerprint
+    assert second.configuration_snapshot["asset_versions"] == runtime.asset_versions

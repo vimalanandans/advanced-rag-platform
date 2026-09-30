@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import json
 import os
+import tempfile
 from pathlib import Path
 from typing import Protocol
+from uuid import UUID
 
 from rag_workbench.contracts import RunManifest
 
@@ -16,6 +17,22 @@ class TraceStore(Protocol):
     def list(self) -> list[RunManifest]: ...
 
 
+class TraceConflictError(ValueError):
+    """A terminal run ID already names a different immutable record."""
+
+
+def _assert_same(existing: RunManifest, proposed: RunManifest) -> None:
+    if existing.model_dump(mode="json") != proposed.model_dump(mode="json"):
+        raise TraceConflictError("terminal run record cannot be overwritten")
+
+
+def _safe_run_id(run_id: str) -> str:
+    try:
+        return str(UUID(run_id))
+    except (ValueError, AttributeError) as error:
+        raise KeyError("invalid run ID") from error
+
+
 class LocalTraceStore:
     """In-memory implementation for deterministic unit tests."""
 
@@ -23,30 +40,42 @@ class LocalTraceStore:
         self._runs: dict[str, RunManifest] = {}
 
     def save(self, manifest: RunManifest) -> None:
-        self._runs[manifest.run_id] = manifest
+        if manifest.run_id in self._runs:
+            _assert_same(self._runs[manifest.run_id], manifest)
+            return
+        self._runs[manifest.run_id] = manifest.model_copy(deep=True)
 
     def get(self, run_id: str) -> RunManifest:
-        return self._runs[run_id]
+        return self._runs[run_id].model_copy(deep=True)
 
     def list(self) -> list[RunManifest]:
-        return list(reversed(list(self._runs.values())))
+        return [item.model_copy(deep=True) for item in reversed(list(self._runs.values()))]
 
 
 class JsonTraceStore:
-    """Local-first durable trace store; atomic replacement prevents partial manifests."""
+    """Atomic, no-overwrite local terminal records; identical retries are idempotent."""
 
     def __init__(self, directory: Path) -> None:
         self.directory = directory
         self.directory.mkdir(parents=True, exist_ok=True)
 
     def save(self, manifest: RunManifest) -> None:
-        target = self.directory / f"{manifest.run_id}.json"
-        temporary = target.with_suffix(".tmp")
-        temporary.write_text(manifest.model_dump_json())
-        temporary.replace(target)
+        target = self.directory / f"{_safe_run_id(manifest.run_id)}.json"
+        fd, temporary = tempfile.mkstemp(prefix=".trace-", dir=self.directory)
+        try:
+            with os.fdopen(fd, "w") as output:
+                output.write(manifest.model_dump_json())
+                output.flush()
+                os.fsync(output.fileno())
+            try:
+                os.link(temporary, target)
+            except FileExistsError:
+                _assert_same(self.get(manifest.run_id), manifest)
+        finally:
+            os.unlink(temporary)
 
     def get(self, run_id: str) -> RunManifest:
-        target = self.directory / f"{run_id}.json"
+        target = self.directory / f"{_safe_run_id(run_id)}.json"
         if not target.exists():
             raise KeyError(run_id)
         return RunManifest.model_validate_json(target.read_text())
@@ -76,9 +105,10 @@ class PostgresTraceStore:
     def save(self, manifest: RunManifest) -> None:
         with self._connection.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO run_manifests (run_id, manifest) VALUES (%s, %s::jsonb) ON CONFLICT (run_id) DO UPDATE SET manifest = EXCLUDED.manifest, updated_at = now()",
+                "INSERT INTO run_manifests (run_id, manifest) VALUES (%s, %s::jsonb) ON CONFLICT (run_id) DO NOTHING",
                 (manifest.run_id, manifest.model_dump_json()),
             )
+        _assert_same(self.get(manifest.run_id), manifest)
 
     def get(self, run_id: str) -> RunManifest:
         with self._connection.cursor() as cursor:

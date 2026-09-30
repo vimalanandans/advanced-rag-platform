@@ -1,0 +1,7 @@
+{
+  "arm": "B",
+  "status": "failed",
+  "phase": "preflight",
+  "error_type": "ValueError",
+  "decision": "iterate"
+}

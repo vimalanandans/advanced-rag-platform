@@ -1,0 +1,119 @@
+pipeline:
+  id: local-real-baseline
+  version: 2.0.0
+  tenant_id: local
+  description: Experimental local-real retrieval with structural context and conservative
+    claim verification
+  budgets:
+    max_total_tokens: 30000
+    max_context_tokens: 1200
+    max_output_tokens: 3000
+    max_latency_ms: 15000
+    max_iterations: 2
+  nodes:
+  - id: classify
+    component: query.classifier@2.0.0
+    inputs:
+      query: $query
+    outputs:
+      decision: query_decision
+  - id: bm25
+    component: retrieval.bm25@2.0.0
+    inputs:
+      query: $query
+      evidence: $evidence
+    outputs:
+      candidates: candidates
+  - id: dense
+    component: retrieval.dense@1.0.0
+    inputs:
+      query: $query
+      evidence: $evidence
+    outputs:
+      candidates: candidates
+  - id: structural
+    component: retrieval.structural@2.0.0
+    inputs:
+      query: $query
+      evidence: $evidence
+    outputs:
+      candidates: candidates
+  - id: fuse
+    component: fusion.rrf@1.0.0
+    inputs:
+      candidate_lists:
+      - bm25.candidates
+      - dense.candidates
+      - structural.candidates
+      - exact.candidates
+    outputs:
+      candidates: candidates
+  - id: verify
+    component: verification.evidence@2.0.0
+    inputs:
+      candidates: fuse.candidates
+      decision: classify.decision
+    outputs:
+      sufficient: bool
+      conflicts: string_list
+      limitations: string_list
+  - id: context
+    component: context.evidence_packer@2.0.0
+    inputs:
+      candidates: fuse.candidates
+      question: $query
+    outputs:
+      context: context
+  - id: generate
+    component: generation.local@2.0.0
+    inputs:
+      question: $query
+      context: context.context
+      sufficient: verify.sufficient
+      candidates: fuse.candidates
+    outputs:
+      answer: answer
+      citations: evidence_list
+      abstained: bool
+  - id: exact
+    component: retrieval.exact@1.0.0
+    inputs:
+      query: $query
+      evidence: $evidence
+    outputs:
+      candidates: candidates
+  - id: claims
+    component: verification.claims@1.0.1
+    inputs:
+      answer: generate.answer
+      citations: generate.citations
+      abstained: generate.abstained
+    outputs:
+      verified_answer: answer
+      citations: evidence_list
+      abstained: bool
+      claims: claim_support
+  edges:
+  - classify -> bm25
+  - classify -> dense
+  - classify -> structural
+  - bm25 -> fuse
+  - dense -> fuse
+  - structural -> fuse
+  - fuse -> verify
+  - fuse -> context
+  - verify -> context
+  - context -> generate
+  - fuse -> generate
+  - verify -> generate
+  - classify -> exact
+  - exact -> fuse
+  - generate -> claims
+  - classify -> verify
+  graph_schema_version: 2.0.0
+  outputs:
+    answer: claims.verified_answer
+    citations: claims.citations
+    abstained: claims.abstained
+    claims: claims.claims
+    context: context.context

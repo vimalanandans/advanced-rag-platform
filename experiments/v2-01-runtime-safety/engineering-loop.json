@@ -1,0 +1,46 @@
+{
+  "task_id": "v2-01-runtime-safety",
+  "problem": "Implicit terminal nodes and unenforced loop exhaustion could return stale or unsafe answers.",
+  "query_or_content_class": "graph runtime control flow",
+  "hypothesis": "Explicit typed terminals and loop completion before consumers preserve baseline behavior while enforcing declared outcomes.",
+  "baseline": {
+    "tests": 39,
+    "fingerprint": "bd09657a714267231398fb586187c369ee2b3c5a2ec805f5e37be63d008e619c"
+  },
+  "experiment": {
+    "suite": "tests/test_runtime_v2.py"
+  },
+  "files_changed": [
+    "rag_workbench/contracts.py",
+    "rag_workbench/graph.py",
+    "rag_workbench/runtime.py",
+    "rag_workbench/experimentation.py",
+    "tests/test_runtime_v2.py",
+    "docs/adr/011-explicit-runtime-terminal-and-loop-outcomes.md",
+    "docs/v2/runtime-contract.md",
+    "docs/v2/implementation-status.md",
+    "docs/doc.md"
+  ],
+  "commands_run": [
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q",
+    "python3 scripts/check_docs.py",
+    "python3 -m compileall -q rag_workbench",
+    "git diff --check"
+  ],
+  "tests_run": [
+    "49 tests passed; baseline fingerprint compatibility, renamed terminal, convergence, exhaustion/fail, denial trace, invalid bindings/list values"
+  ],
+  "metrics_before": {
+    "tests": 39
+  },
+  "metrics_after": {
+    "tests": 49
+  },
+  "failures": [],
+  "root_causes": [
+    "Terminal selection depended on names; exhaustion ignored; loops scheduled after consumers; authorization outside trace lifecycle"
+  ],
+  "regressions": [],
+  "decision": "accept",
+  "notes": "Accept deterministic runtime safety subset only. Docker/M3/provider operation, cancellation and advanced retrieval not accepted."
+}

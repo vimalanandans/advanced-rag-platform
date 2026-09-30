@@ -9,6 +9,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 import yaml
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
 
 from rag_workbench.contracts import EdgeKind, Pipeline
 from rag_workbench.registry import ComponentRegistry
@@ -30,6 +32,8 @@ def pipeline_from_yaml(raw: str) -> Pipeline:
     if "pipeline" in payload:
         payload = payload["pipeline"]
     graph = {"nodes": payload.pop("nodes", []), "edges": _parse_edges(payload.pop("edges", [])), "loops": payload.pop("loops", [])}
+    graph["schema_version"] = payload.pop("graph_schema_version", "1.0.0")
+    graph["outputs"] = payload.pop("outputs", {})
     return Pipeline(**payload, graph=graph)
 
 
@@ -57,6 +61,12 @@ def compile_pipeline(pipeline: Pipeline, registry: ComponentRegistry) -> Executi
         except KeyError as error:
             raise GraphValidationError(str(error)) from error
         manifest = manifests[node.id]
+        try:
+            Draft202012Validator.check_schema(manifest.config_schema)
+        except SchemaError as error:
+            raise GraphValidationError(f"component {node.component} has an invalid configuration schema") from error
+        if any(Draft202012Validator(manifest.config_schema).iter_errors(node.config)):
+            raise GraphValidationError(f"node {node.id} configuration violates its component schema")
         if set(node.inputs) != set(manifest.input_types):
             raise GraphValidationError(f"node {node.id} inputs must match component contract")
         if set(node.outputs) != set(manifest.output_types):
@@ -65,6 +75,8 @@ def compile_pipeline(pipeline: Pipeline, registry: ComponentRegistry) -> Executi
             raise GraphValidationError(f"node {node.id} output types must match component contract")
 
     loop_nodes = {node_id for loop in pipeline.graph.loops for node_id in loop.nodes}
+    if sum(len(loop.nodes) for loop in pipeline.graph.loops) != len(loop_nodes):
+        raise GraphValidationError("loop nodes must be unique and cannot overlap loops")
     loop_ids = [loop.id for loop in pipeline.graph.loops]
     if len(loop_ids) != len(set(loop_ids)):
         raise GraphValidationError("loop IDs must be unique")
@@ -90,7 +102,9 @@ def compile_pipeline(pipeline: Pipeline, registry: ComponentRegistry) -> Executi
     for edge in pipeline.graph.edges:
         if edge.source not in nodes or edge.target not in nodes:
             raise GraphValidationError(f"edge {edge.source}->{edge.target} references an unknown node")
-        if edge.kind == EdgeKind.FEEDBACK and not ({edge.source, edge.target} <= loop_nodes):
+        if edge.kind == EdgeKind.FEEDBACK and not any(
+            {edge.source, edge.target} <= set(loop.nodes) for loop in pipeline.graph.loops
+        ):
             raise GraphValidationError("feedback edges are permitted only in declared loops")
         if edge.kind == EdgeKind.CONDITIONAL and not edge.condition:
             raise GraphValidationError("conditional edges require a condition")
@@ -117,8 +131,44 @@ def compile_pipeline(pipeline: Pipeline, registry: ComponentRegistry) -> Executi
     if len(order) != len(nodes):
         raise GraphValidationError("graph must be a DAG outside declared feedback loops")
     _validate_bindings(pipeline, manifests)
-    serialized = json.dumps(pipeline.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+    _validate_terminal_outputs(pipeline, manifests)
+    for loop in pipeline.graph.loops:
+        if loop.nodes != [node_id for node_id in order if node_id in loop.nodes]:
+            raise GraphValidationError(f"loop {loop.id} nodes must follow graph execution order")
+        for edge in pipeline.graph.edges:
+            if edge.source in loop.nodes and edge.target not in loop.nodes and order.index(edge.target) < order.index(loop.nodes[-1]):
+                raise GraphValidationError(f"loop {loop.id} must finish before downstream nodes execute")
+    serialized = json.dumps(pipeline_snapshot(pipeline), sort_keys=True, separators=(",", ":"))
     return ExecutionPlan(pipeline=pipeline, fingerprint=hashlib.sha256(serialized.encode()).hexdigest(), order=tuple(order))
+
+
+def pipeline_snapshot(pipeline: Pipeline) -> dict:
+    """Retain the historical v1 canonical representation and fingerprints."""
+    snapshot = pipeline.model_dump(mode="json")
+    if pipeline.graph.schema_version == "1.0.0":
+        snapshot["graph"].pop("schema_version")
+        snapshot["graph"].pop("outputs")
+    return snapshot
+
+
+def _validate_terminal_outputs(pipeline: Pipeline, manifests: dict) -> None:
+    bindings = pipeline.graph.outputs
+    if pipeline.graph.schema_version == "1.0.0":
+        if bindings:
+            raise GraphValidationError("explicit terminal outputs require graph schema 2.0.0")
+        return
+    required = {"answer": "answer", "citations": "evidence_list", "abstained": "bool"}
+    allowed = {**required, "context": "context", "claims": "claim_support"}
+    if not set(required) <= set(bindings) or not set(bindings) <= set(allowed):
+        raise GraphValidationError("v2 terminal outputs require answer, citations and abstained; context is optional")
+    for name, binding in bindings.items():
+        try:
+            node, port = binding.split(".", 1)
+            actual = manifests[node].output_types[port]
+        except (ValueError, KeyError) as error:
+            raise GraphValidationError(f"invalid terminal binding {name}") from error
+        if actual != allowed[name]:
+            raise GraphValidationError(f"terminal binding {name} must produce {allowed[name]}")
 
 
 def _validate_bindings(pipeline: Pipeline, manifests: dict) -> None:

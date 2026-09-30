@@ -1,0 +1,202 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_fingerprint": "c8f64308452da9f4828fbc1009413d6505865ee64cb251936a6605d04bcd2ea6",
+  "corpus_revision": "373b40fd170693ae901a7de84b7ba06050cd187eb34ae69dd9de78c864671628",
+  "case_count": 48,
+  "setting": "HotpotQA question-scoped distractor validation; locked held-out",
+  "decision": "iterate",
+  "arms": {
+    "A": {
+      "graph_fingerprint": "9b3eee2b1147b61f332daa8fdd2ce5d2f146a0cd6d83263325ba949e5f90f4cc",
+      "completed_cases": 48,
+      "retrieval_recall_at_5": {
+        "mean": 0.8125,
+        "denominator": 48
+      },
+      "retrieval_mrr": {
+        "mean": 0.8791666666666668,
+        "denominator": 48
+      },
+      "all_supporting_paragraphs_in_top_5": 31,
+      "delta_recall_at_5_vs_A": 0.0,
+      "paired_stratified_bootstrap_95pct_interval": [
+        0.0,
+        0.0
+      ],
+      "abstained": 48,
+      "answer_citation_expectations_passed": 0,
+      "mean_case_latency_ms": 1873.3145208745252,
+      "unsupported_attempted_claim_rate": 0.975609756097561,
+      "by_query_class": {
+        "comparison": {
+          "cases": 24,
+          "recall_at_5": 0.8333333333333334
+        },
+        "multi_hop": {
+          "cases": 24,
+          "recall_at_5": 0.7916666666666666
+        }
+      }
+    },
+    "B": {
+      "graph_fingerprint": "ade68f4bdec4aee0ae6119d040dfe458e7fc1669045939dfae31b67d399bba58",
+      "completed_cases": 48,
+      "retrieval_recall_at_5": {
+        "mean": 0.9166666666666666,
+        "denominator": 48
+      },
+      "retrieval_mrr": {
+        "mean": 0.9444444444444445,
+        "denominator": 48
+      },
+      "all_supporting_paragraphs_in_top_5": 41,
+      "delta_recall_at_5_vs_A": 0.10416666666666667,
+      "paired_stratified_bootstrap_95pct_interval": [
+        0.010416666666666666,
+        0.19791666666666666
+      ],
+      "abstained": 46,
+      "answer_citation_expectations_passed": 1,
+      "mean_case_latency_ms": 2256.8106875628473,
+      "unsupported_attempted_claim_rate": 0.9473684210526315,
+      "by_query_class": {
+        "comparison": {
+          "cases": 24,
+          "recall_at_5": 1.0
+        },
+        "multi_hop": {
+          "cases": 24,
+          "recall_at_5": 0.8333333333333334
+        }
+      }
+    },
+    "C": {
+      "graph_fingerprint": "6676b06dfd9385aa2097d9f21fe337a157e427a07d6988e018f9cbcf4e51a672",
+      "completed_cases": 48,
+      "retrieval_recall_at_5": {
+        "mean": 0.9583333333333334,
+        "denominator": 48
+      },
+      "retrieval_mrr": {
+        "mean": 0.9166666666666666,
+        "denominator": 48
+      },
+      "all_supporting_paragraphs_in_top_5": 44,
+      "delta_recall_at_5_vs_A": 0.14583333333333334,
+      "paired_stratified_bootstrap_95pct_interval": [
+        0.07291666666666667,
+        0.22916666666666666
+      ],
+      "abstained": 46,
+      "answer_citation_expectations_passed": 0,
+      "mean_case_latency_ms": 2225.4913359165585,
+      "unsupported_attempted_claim_rate": 0.9753086419753086,
+      "by_query_class": {
+        "comparison": {
+          "cases": 24,
+          "recall_at_5": 1.0
+        },
+        "multi_hop": {
+          "cases": 24,
+          "recall_at_5": 0.9166666666666666
+        }
+      }
+    },
+    "D": {
+      "graph_fingerprint": "6eb809367bcb5301cf2cb402b8525dfdd338e8bbe807074cc515da2d3b4f4895",
+      "completed_cases": 48,
+      "retrieval_recall_at_5": {
+        "mean": 0.8958333333333334,
+        "denominator": 48
+      },
+      "retrieval_mrr": {
+        "mean": 0.9034722222222222,
+        "denominator": 48
+      },
+      "all_supporting_paragraphs_in_top_5": 38,
+      "delta_recall_at_5_vs_A": 0.08333333333333333,
+      "paired_stratified_bootstrap_95pct_interval": [
+        0.010416666666666666,
+        0.15625
+      ],
+      "abstained": 47,
+      "answer_citation_expectations_passed": 0,
+      "mean_case_latency_ms": 2382.6618845005214,
+      "unsupported_attempted_claim_rate": 0.9879518072289156,
+      "by_query_class": {
+        "comparison": {
+          "cases": 24,
+          "recall_at_5": 0.9583333333333334
+        },
+        "multi_hop": {
+          "cases": 24,
+          "recall_at_5": 0.8333333333333334
+        }
+      }
+    },
+    "E": {
+      "graph_fingerprint": "73fc7c35d88031b3f055c8dd038025b5f745896672f4bfefcdab8527e16fcd72",
+      "completed_cases": 48,
+      "retrieval_recall_at_5": {
+        "mean": 0.8958333333333334,
+        "denominator": 48
+      },
+      "retrieval_mrr": {
+        "mean": 0.921875,
+        "denominator": 48
+      },
+      "all_supporting_paragraphs_in_top_5": 39,
+      "delta_recall_at_5_vs_A": 0.08333333333333333,
+      "paired_stratified_bootstrap_95pct_interval": [
+        0.0,
+        0.17708333333333334
+      ],
+      "abstained": 47,
+      "answer_citation_expectations_passed": 0,
+      "mean_case_latency_ms": 2802.950776000216,
+      "unsupported_attempted_claim_rate": 0.9866666666666667,
+      "by_query_class": {
+        "comparison": {
+          "cases": 24,
+          "recall_at_5": 1.0
+        },
+        "multi_hop": {
+          "cases": 24,
+          "recall_at_5": 0.7916666666666666
+        }
+      }
+    },
+    "F": {
+      "graph_fingerprint": "9de0e7bec452ed578471719b2c0abbbcd2c9b1bde086d9aa456eaadfdefb366b",
+      "completed_cases": 48,
+      "retrieval_recall_at_5": {
+        "mean": 0.8958333333333334,
+        "denominator": 48
+      },
+      "retrieval_mrr": {
+        "mean": 0.921875,
+        "denominator": 48
+      },
+      "all_supporting_paragraphs_in_top_5": 39,
+      "delta_recall_at_5_vs_A": 0.08333333333333333,
+      "paired_stratified_bootstrap_95pct_interval": [
+        0.010416666666666666,
+        0.16666666666666666
+      ],
+      "abstained": 47,
+      "answer_citation_expectations_passed": 0,
+      "mean_case_latency_ms": 2099.478399333293,
+      "unsupported_attempted_claim_rate": 0.9866666666666667,
+      "by_query_class": {
+        "comparison": {
+          "cases": 24,
+          "recall_at_5": 1.0
+        },
+        "multi_hop": {
+          "cases": 24,
+          "recall_at_5": 0.7916666666666666
+        }
+      }
+    }
+  }
+}

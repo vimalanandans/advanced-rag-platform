@@ -4,7 +4,17 @@ import pytest
 from fastapi.testclient import TestClient
 
 from rag_workbench.api import app
-from rag_workbench.contracts import Budget, CapabilityManifest, ComponentManifest, Edge, EdgeKind, Loop, Node, Pipeline, PipelineGraph
+from rag_workbench.contracts import (
+    Budget,
+    CapabilityManifest,
+    ComponentManifest,
+    Edge,
+    EdgeKind,
+    Loop,
+    Node,
+    Pipeline,
+    PipelineGraph,
+)
 from rag_workbench.graph import GraphValidationError
 from rag_workbench.ingestion import ingest_path
 from rag_workbench.registry import baseline_registry
@@ -34,7 +44,6 @@ def test_runtime_executes_registered_component_and_typed_bindings():
 
 
 def test_compiler_rejects_binding_without_an_explicit_edge():
-    root = Path(__file__).parent.parent
     pipeline = _pipeline("generation.local@1.0.0")
     with pytest.raises(GraphValidationError, match="inputs must match"):
         WorkbenchRuntime().compile(pipeline)
@@ -56,7 +65,7 @@ def test_failed_component_persists_terminal_trace():
     with pytest.raises(RuntimeError, match="provider failed"):
         runtime.run(runtime.compile(_pipeline("test.fail@1.0.0")), "fail")
     saved = runtime.trace_store.list()[0]
-    assert saved.status == "failed" and "provider failed" in (saved.error or "")
+    assert saved.status == "failed" and saved.error == "RuntimeError: execution failed"
     assert saved.node_executions[-1].status == "failed"
 
 

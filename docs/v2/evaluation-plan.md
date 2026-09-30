@@ -53,3 +53,8 @@ Persist baseline and candidate records even on failure. Record `accept`, `reject
 Use `experiments/<experiment-id>/` for immutable hypothesis/configuration, dataset/split references, fingerprints, case outputs, metrics, failures and decision. Sensitive queries/evidence stay in access-controlled local artifacts; commit only approved fixtures and safe summaries. Use the [engineering-loop template](../../experiments/templates/engineering-loop.json) to retain work evidence outside chat. Restart/cancel must preserve terminal experiment status and completed case records.
 
 An experiment is reproducible only when referenced corpus/index/model assets remain available. Fingerprints alone do not recreate deleted assets.
+
+
+## Sourced benchmark input
+
+[HotpotQA benchmark provenance and scope](../research/hotpotqa-benchmark.md) documents the first downloaded, pinned corpus, BM25 baseline and local real-model A-F comparison. It covers hard multi-hop and comparison questions in the distractor setting. Other V2 content/query classes need independent sourced evaluation before broad quality acceptance.

@@ -1,0 +1,40 @@
+{
+  "task_id": "v2-08-immutable-publication",
+  "problem": "Runtime depended on mutable fixture paths with extraction implying approval.",
+  "query_or_content_class": "Markdown hierarchy and PDF page text",
+  "hypothesis": "Content-addressed originals and separately approved releases preserve provenance and prevent draft retrieval.",
+  "baseline": {
+    "source_lifecycle": "mutable file ingestion"
+  },
+  "experiment": {
+    "draft": "0ad9738162ed2884465697a30300e06b70e5e5847ebc2d3309a5d86bcfaad1b9",
+    "approved": "c450916c04490e49bf7fc0304c81f0e0955e2d960708a1d6f96a70b4b97bd8fe"
+  },
+  "files_changed": [
+    "rag_workbench/evidence_store.py",
+    "rag_workbench/local_real.py",
+    "scripts/publish_corpus.py",
+    "tests/test_evidence_store.py"
+  ],
+  "commands_run": [
+    "publish_corpus.py stage --corpus publication-smoke data/fixtures/rag_basics.md",
+    "publish_corpus.py approve <draft-id>",
+    "real local runtime with RAG_WORKBENCH_CORPUS_RELEASE=<approved-id>"
+  ],
+  "tests_run": [
+    "120 pytest tests passed",
+    "Markdown/PDF publication, immutable reopen, approval, tamper, size, scope and revision checks"
+  ],
+  "metrics_before": {},
+  "metrics_after": {
+    "unit_contract_tests": 120,
+    "real_release_evidence_count": 3
+  },
+  "failures": [
+    "Real generator abstained in publication smoke; no answer-quality acceptance."
+  ],
+  "root_causes": [],
+  "regressions": [],
+  "decision": "accept",
+  "notes": "Accept the bounded local-admin source-publication implementation only. Durable jobs, index-build promotion, parser sandboxing, multi-user review and representative quality remain pending."
+}

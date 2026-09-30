@@ -1,5 +1,10 @@
 from rag_workbench.contracts import Evidence
-from rag_workbench.retrieval import BM25Retriever, DenseRetriever, VectorlessHierarchicalRetriever, reciprocal_rank_fusion
+from rag_workbench.retrieval import (
+    BM25Retriever,
+    DenseRetriever,
+    VectorlessHierarchicalRetriever,
+    reciprocal_rank_fusion,
+)
 
 
 def evidence():

@@ -1,0 +1,58 @@
+{
+  "task_id": "v2-05-comparison",
+  "problem": "No isolated A-F strategy graphs, local reranker contract or class/stage comparison runner existed.",
+  "query_or_content_class": "all twelve classes in 22 synthetic cases",
+  "hypothesis": "Explicit graph variants and isolated processes make ranking/routing experiments inspectable without weakening policy gates.",
+  "baseline": {
+    "tests": 89
+  },
+  "experiment": {
+    "suite": "tests/test_strategy_comparison.py",
+    "dataset": "v2-synthetic@1.0.0"
+  },
+  "files_changed": [
+    "rag_workbench/reranking.py",
+    "rag_workbench/strategy_graphs.py",
+    "rag_workbench/contracts.py",
+    "rag_workbench/experimentation.py",
+    "rag_workbench/local_real.py",
+    "rag_workbench/runtime.py",
+    "rag_workbench/v2_components.py",
+    "scripts/run_strategy_comparison.py",
+    "tests/test_strategy_comparison.py",
+    "data/v2/",
+    "pyproject.toml",
+    "docs/adr/015-controlled-strategy-comparisons.md",
+    "docs/research/local-reranking.md",
+    "docs/v2/strategy-comparison.md",
+    "docs/v2/implementation-status.md",
+    "docs/reference/configuration.md",
+    "docs/doc.md",
+    "experiments/README.md"
+  ],
+  "commands_run": [
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q",
+    "python3 scripts/run_strategy_comparison.py --dataset data/v2/dataset.json --corpus data/v2/corpus.json --requested-at 2026-09-30T00:00:00+00:00 --all --output experiments/v2-05-comparison/preflight",
+    "python3 scripts/check_docs.py",
+    "python3 -m compileall -q rag_workbench scripts/run_strategy_comparison.py",
+    "git diff --check"
+  ],
+  "tests_run": [
+    "105 passed, including each A-F graph executing with explicit provider doubles"
+  ],
+  "metrics_before": {
+    "tests": 89
+  },
+  "metrics_after": {
+    "tests": 105
+  },
+  "failures": [
+    "Real A-F run: six preflight failures due to absent model configuration; retained all records"
+  ],
+  "root_causes": [
+    "Local models/endpoints and reranker assets not provisioned"
+  ],
+  "regressions": [],
+  "decision": "iterate",
+  "notes": "Infrastructure verified; real quality/resources unmeasured. No strategy promoted and corrective/agentic work remains gated."
+}

@@ -1,0 +1,53 @@
+{
+  "task_id": "v2-04-context-verification",
+  "problem": "Structural lane had no hierarchy and generated claims were not validated against citations.",
+  "query_or_content_class": "query classes, parent context, warnings and unsupported claims",
+  "hypothesis": "Explicit parent traversal, whole-block context and complete quoted-sentence verification enforce source fidelity without semantic confidence claims.",
+  "baseline": {
+    "tests": 70
+  },
+  "experiment": {
+    "suite": "tests/test_v2_intelligence.py"
+  },
+  "files_changed": [
+    "rag_workbench/intelligence.py",
+    "rag_workbench/v2_components.py",
+    "rag_workbench/ingestion.py",
+    "rag_workbench/contracts.py",
+    "rag_workbench/experimentation.py",
+    "rag_workbench/runtime.py",
+    "rag_workbench/graph.py",
+    "rag_workbench/local_real.py",
+    "configs/pipelines/local-real.yaml",
+    "tests/test_v2_intelligence.py",
+    "docs/adr/014-conservative-context-and-claim-verification.md",
+    "docs/v2/verification-contract.md",
+    "docs/v2/implementation-status.md",
+    "docs/v2/local-real-profile.md",
+    "docs/doc.md"
+  ],
+  "commands_run": [
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q",
+    "python3 scripts/check_docs.py",
+    "python3 -m compileall -q rag_workbench",
+    "git diff --check"
+  ],
+  "tests_run": [
+    "89 passed"
+  ],
+  "metrics_before": {
+    "tests": 70
+  },
+  "metrics_after": {
+    "tests": 89
+  },
+  "failures": [
+    "One temporal rule misclassified previous answer; narrowed rule before acceptance"
+  ],
+  "root_causes": [
+    "Overbroad previous keyword"
+  ],
+  "regressions": [],
+  "decision": "iterate",
+  "notes": "Deterministic graph/source-fidelity verified. General semantic claims, inferred contradictions, held-out retrieval quality and live M3 provider acceptance remain pending."
+}

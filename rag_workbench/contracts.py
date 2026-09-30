@@ -2,11 +2,37 @@
 
 from __future__ import annotations
 
-from enum import Enum
 from datetime import UTC, datetime
+from enum import Enum
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+QueryClass = Literal[
+    "exact_identifier", "exact_phrase", "semantic", "comparison", "procedure",
+    "table", "visual", "temporal", "multi_hop", "relationship", "conversational",
+    "no_rag_required",
+]
+
+
+class QueryDecision(BaseModel):
+    original_query: str
+    query_class: QueryClass
+    confidence: float = Field(ge=0, le=1)
+    required_capabilities: list[str]
+    recommended_lanes: list[str]
+    reason: str
+    fallback: str = "all_available_lanes"
+    classifier_version: str = "rules@1.0.0"
+
+
+class ClaimSupport(BaseModel):
+    claim: str
+    evidence_ids: list[str]
+    support: Literal["supported", "partial", "unsupported", "conflicting"]
+    confidence: float = Field(ge=0, le=1)
+    verifier: str = "verbatim-sentence@1.0.0"
+    action: Literal["keep", "qualify", "remove", "abstain"]
 
 
 class EdgeKind(str, Enum):
@@ -52,9 +78,11 @@ class Loop(BaseModel):
 class PipelineGraph(BaseModel):
     model_config = ConfigDict(frozen=True)
 
+    schema_version: Literal["1.0.0", "2.0.0"] = "1.0.0"
     nodes: list[Node]
     edges: list[Edge]
     loops: list[Loop] = Field(default_factory=list)
+    outputs: dict[str, str] = Field(default_factory=dict)
 
 
 class Pipeline(BaseModel):
@@ -66,7 +94,7 @@ class Pipeline(BaseModel):
     graph: PipelineGraph
 
     @model_validator(mode="after")
-    def version_is_semantic(self) -> "Pipeline":
+    def version_is_semantic(self) -> Pipeline:
         if len(self.version.split(".")) != 3 or not all(part.isdigit() for part in self.version.split(".")):
             raise ValueError("pipeline version must be semantic major.minor.patch")
         return self
@@ -139,6 +167,8 @@ class TokenUsage(BaseModel):
 
 
 class ContextPlan(BaseModel):
+    decisions: list[dict[str, Any]] = Field(default_factory=list)
+    estimator: str = "whitespace-fixture@1.0.0"
     included: list[str] = Field(default_factory=list)
     omitted: list[str] = Field(default_factory=list)
     truncated: list[str] = Field(default_factory=list)
@@ -157,6 +187,7 @@ class NodeExecution(BaseModel):
 
 
 class RunManifest(BaseModel):
+    schema_version: str = "1.1.0"
     run_id: str
     trace_id: str
     tenant_id: str
@@ -171,9 +202,15 @@ class RunManifest(BaseModel):
     node_executions: list[NodeExecution] = Field(default_factory=list)
     status: Literal["completed", "failed"] = "completed"
     error: str | None = None
+    loop_outcomes: list[dict[str, Any]] = Field(default_factory=list)
+    embedding_identity: dict[str, Any] = Field(default_factory=dict)
+    asset_versions: dict[str, str] = Field(default_factory=dict)
+    retrieval_candidates: list[dict[str, Any]] = Field(default_factory=list)
+    decisions: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class RunResult(BaseModel):
+    claims: list[ClaimSupport] = Field(default_factory=list)
     manifest: RunManifest
     answer: str
     citations: list[Evidence] = Field(default_factory=list)

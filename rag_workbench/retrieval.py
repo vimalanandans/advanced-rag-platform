@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import re
-import hashlib
 import uuid
 from collections import Counter
-from typing import Iterable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from rag_workbench.contracts import Evidence, RetrievalCandidate
 from rag_workbench.providers import VectorIndex
+
+if TYPE_CHECKING:
+    from rag_workbench.embeddings import EmbeddingProvider
 
 
 def tokens(value: str) -> list[str]:
@@ -72,40 +77,57 @@ class IndexedDenseRetriever(Retriever):
 
     lane = "dense"
 
-    def __init__(self, index: VectorIndex, dimensions: int = 64) -> None:
+    def __init__(self, index: VectorIndex, dimensions: int | None = None, embeddings: EmbeddingProvider | None = None) -> None:
         self.index = index
-        self.dimensions = dimensions
+        if embeddings is not None and dimensions is not None and dimensions != embeddings.identity.dimensions:
+            raise ValueError("embedding dimension differs from index configuration")
+        self.embeddings = embeddings
+        self.dimensions = embeddings.identity.dimensions if embeddings is not None else (dimensions or 64)
         self._indexed_revision: str | None = None
 
     def retrieve(self, query: str, evidence: Iterable[Evidence], limit: int = 5) -> list[RetrievalCandidate]:
         approved = [item for item in evidence if item.approval_state == "approved"]
+        if not approved:
+            return []
         self._ensure_index(approved)
-        by_id = {item.id: item for item in approved}
-        matches = self.index.search(_embedding(query, self.dimensions), limit=limit)
+        by_id = {self._point_id(item): item for item in approved}
+        matches = self.index.search(self._encode([query], "query")[0], limit=limit, allowed_point_ids=sorted(by_id))
         candidates: list[RetrievalCandidate] = []
         for rank, match in enumerate(matches, start=1):
-            evidence_id = str(match.get("payload", {}).get("evidence_id", ""))
-            item = by_id.get(evidence_id)
-            if item is not None:
-                candidates.append(RetrievalCandidate(
-                    evidence=item, lane=self.lane, score=float(match.get("score", 0.0)), rank=rank
-                ))
+            item = by_id.get(str(match.get("id", "")))
+            if item is None:
+                raise PermissionError("vector provider returned a point outside the authorized snapshot")
+            score = float(match.get("score", 0.0))
+            if not math.isfinite(score):
+                raise ValueError("vector provider returned a non-finite score")
+            candidates.append(RetrievalCandidate(evidence=item, lane=self.lane, score=score, rank=rank))
         return candidates
 
     def _ensure_index(self, evidence: list[Evidence]) -> None:
         revision = hashlib.sha256(
-            "|".join(f"{item.id}:{item.revision}" for item in evidence).encode("utf-8")
+            "|".join(sorted(self._point_id(item) for item in evidence)).encode("utf-8")
         ).hexdigest()
         if revision == self._indexed_revision:
             return
         self.index.create_index(self.dimensions)
-        for item in evidence:
+        vectors = self._encode([item.content for item in evidence], "document")
+        for item, vector in zip(evidence, vectors):
             self.index.upsert(
-                str(uuid.uuid5(uuid.NAMESPACE_URL, f"{item.id}:{item.revision}")),
-                _embedding(item.content, self.dimensions),
+                self._point_id(item),
+                vector,
                 {"evidence_id": item.id, "document_id": item.document_id, "revision": item.revision},
             )
         self._indexed_revision = revision
+
+    def _point_id(self, item: Evidence) -> str:
+        identity = json.dumps({"evidence": item.model_dump(mode="json", exclude={"source_uri"}), "embedding": self.embeddings.identity.model_dump() if self.embeddings else "hashed-fixture-v1", "dimensions": self.dimensions}, sort_keys=True, separators=(",", ":"))
+        return str(uuid.uuid5(uuid.NAMESPACE_URL, identity))
+
+    def _encode(self, texts: list[str], purpose: str) -> list[list[float]]:
+        vectors = self.embeddings.encode(texts, purpose=purpose) if self.embeddings else [_embedding(text, self.dimensions) for text in texts]
+        if len(vectors) != len(texts) or any(len(vector) != self.dimensions or any(not math.isfinite(value) for value in vector) for vector in vectors):
+            raise ValueError("embedding provider violated dimension or batch contract")
+        return vectors
 
 
 class VectorlessHierarchicalRetriever(Retriever):

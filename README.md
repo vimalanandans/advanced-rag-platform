@@ -71,7 +71,8 @@ makes an execution reproducible and a provider replaceable.
 
 The [V2 requirements and coverage map](docs/v2/requirements.md) defines the planned evolution, including the
 [current-system assessment](docs/v2/current-system-assessment.md), target architecture and measured migration.
-Real embeddings, persistent BM25, claim verification and the local-real profile are planned, not shipped.
+An [experimental local-real profile](docs/v2/local-real-profile.md) now composes persistent BM25, exact retrieval,
+Ollama embeddings and Qdrant. Live-provider acceptance and the full V2 verification/routing milestone remain pending.
 
 ## Documentation
 

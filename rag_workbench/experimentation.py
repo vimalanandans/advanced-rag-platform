@@ -15,17 +15,12 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from rag_workbench.contracts import ComponentManifest, Evidence, RequestContext
-from rag_workbench.graph import ExecutionPlan
+from rag_workbench.contracts import ComponentManifest, Evidence, QueryClass, RequestContext
+from rag_workbench.graph import ExecutionPlan, pipeline_snapshot
 from rag_workbench.runtime import WorkbenchRuntime
 
 VERSION = r"^\d+\.\d+\.\d+$"
 SAFE_ID = r"^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
-QueryClass = Literal[
-    "exact_identifier", "exact_phrase", "semantic", "comparison", "procedure",
-    "table", "visual", "temporal", "multi_hop", "relationship", "conversational",
-    "no_rag_required",
-]
 Split = Literal["development", "tuning", "held_out", "adversarial", "regression"]
 
 
@@ -219,6 +214,7 @@ def run_experiment(
     request: RequestContext, *, experiment_id: str, run_id: str, hypothesis: str,
     baseline: str, split: Split, output_directory: Path, k: int = 5,
     ranking_component: str = "fusion.rrf@1.0.0",
+    allow_local_real: bool = False,
 ) -> Path:
     """Run a pinned dataset through the existing graph, recording a safe artifact.
 
@@ -244,19 +240,33 @@ def run_experiment(
         raise ValueError("strategy component requirements differ from graph")
     if component_ids.count(ranking_component) != 1:
         raise ValueError("ranking component must identify exactly one graph node")
-    if strategy.required_models != [runtime.model_version]:
+    available_models = {runtime.model_version, *runtime.asset_versions.values()}
+    if runtime.model_version not in strategy.required_models or not set(strategy.required_models) <= available_models:
         raise ValueError("strategy model identity differs from runtime")
     # This initial runner supports the fixture only. Do not imply that index/model
     # version checks exist for local-real until those contracts are implemented.
-    if strategy.required_indexes or runtime.model_version != "deterministic-local-generator@1.0.0":
+    if not allow_local_real and (strategy.required_indexes or runtime.model_version != "deterministic-local-generator@1.0.0"):
         raise ValueError("initial experiment runner supports the deterministic fixture only")
+    if allow_local_real and not set(strategy.required_indexes) <= set(runtime.index_revisions.values()):
+        raise ValueError("strategy index identity differs from runtime")
     cases = [case for case in dataset.cases if case.split == split]
     if not cases:
         raise ValueError("selected dataset split is empty")
     if any(case.query_class not in strategy.supported_query_classes for case in cases):
         raise ValueError("dataset query class is unsupported by strategy")
-    if any(case.policy_constraints for case in cases):
-        raise ValueError("case policy constraints require a future explicit policy-case runner")
+    requests = {}
+    for case in cases:
+        constraints = case.policy_constraints
+        if not set(constraints) <= {"allowed_corpora", "allowed_revisions", "applicability_tags"}:
+            raise ValueError("unsupported case policy constraints")
+        case_request = RequestContext.model_validate(request.model_dump() | constraints)
+        if request.allowed_corpora and not (case_request.allowed_corpora and set(case_request.allowed_corpora) <= set(request.allowed_corpora)):
+            raise ValueError("case policy constraints cannot widen corpus scope")
+        if not set(case_request.applicability_tags) <= set(request.applicability_tags):
+            raise ValueError("case policy constraints cannot widen applicability scope")
+        if any(case_request.allowed_revisions.get(key) != value for key, value in request.allowed_revisions.items()):
+            raise ValueError("case policy constraints cannot widen revision scope")
+        requests[case.case_id] = case_request
     evidence_ids = [item.id for item in runtime.evidence]
     if len(evidence_ids) != len(set(evidence_ids)):
         raise ValueError("corpus evidence IDs must be unique")
@@ -276,20 +286,42 @@ def run_experiment(
                 self.ranked_ids = [candidate.evidence.id for candidate in outputs["candidates"]]
             return outputs
 
+    class RecordingTraceStore:
+        def __init__(self):
+            self.manifest = None
+
+        def save(self, manifest):
+            runtime.trace_store.save(manifest)
+            self.manifest = manifest.model_copy(deep=True)
+
+        def get(self, run_id):
+            return runtime.trace_store.get(run_id)
+
+        def list(self):
+            return runtime.trace_store.list()
+
     results: list[dict[str, Any]] = []
     failures: list[str] = []
     for case in cases:
         registry = RecordingRegistry()
-        measured = WorkbenchRuntime(registry=registry, trace_store=runtime.trace_store, model_version=runtime.model_version)
+        recorder = RecordingTraceStore()
+        measured = WorkbenchRuntime(registry=registry, trace_store=recorder, model_version=runtime.model_version)
+        measured.embedding_identity = runtime.embedding_identity
+        measured.index_revisions = runtime.index_revisions
+        measured.asset_versions = runtime.asset_versions
         measured.set_evidence(runtime.evidence)
         started = time.monotonic()
         try:
-            result = measured.run(plan, case.query, request)
+            result = measured.run(plan, case.query, requests[case.case_id])
             if registry.ranked_ids is None:
                 raise ValueError("ranking stage did not execute")
             metrics = ranking_metrics(registry.ranked_ids, case, k)
             citation_ids = [item.id for item in result.citations]
             passed = result.abstained == case.expected_abstention and set(case.expected_evidence_ids) <= set(citation_ids)
+            if case.expected_claims:
+                from rag_workbench.intelligence import normalize
+                supported = {normalize(claim.claim) for claim in result.claims if claim.support == "supported"}
+                passed = passed and {normalize(claim) for claim in case.expected_claims} <= supported
             if metrics.hard_negative_hits:
                 passed = False
             if not passed:
@@ -300,38 +332,68 @@ def run_experiment(
                 "run_id": result.manifest.run_id, "ranked_evidence_ids": registry.ranked_ids,
                 "citation_ids": citation_ids, "abstained": result.abstained,
                 "ranking": metrics.model_dump(mode="json"),
+                "stage_ranking": {event["node_id"]: ranking_metrics([item["evidence_id"] for item in event["candidates"]], case, k).model_dump(mode="json") for event in result.manifest.retrieval_candidates},
+                "stage_latency_ms": {node.node_id: sum(event.duration_ms for event in result.manifest.node_executions if event.node_id == node.node_id) for node in result.manifest.node_executions},
                 "latency_ms": (time.monotonic() - started) * 1000,
                 "token_usage": result.manifest.token_usage.model_dump(mode="json"),
-                "claim_support": None,
+                "claim_support": [claim.model_dump(mode="json", exclude={"claim"}) for claim in result.claims] if result.claims else None,
+                "abstention_correct": result.abstained == case.expected_abstention,
+                "expected_abstention": case.expected_abstention,
             })
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 - record a failed case without exposing provider details
             # Error class only: provider exception text can contain private URLs/data.
             failures.append(f"{case.case_id}: {type(error).__name__}")
-            results.append({"case_id": case.case_id, "query_class": case.query_class,
-                            "status": "failed", "passed": False, "error_type": type(error).__name__})
-    valid = [item["ranking"] for item in results if item["status"] == "completed"]
+            failed = {"case_id": case.case_id, "query_class": case.query_class,
+                      "status": "failed", "passed": False, "error_type": type(error).__name__,
+                      "latency_ms": (time.monotonic() - started) * 1000}
+            if registry.ranked_ids is not None:
+                failed["ranked_evidence_ids"] = registry.ranked_ids
+                failed["ranking"] = ranking_metrics(registry.ranked_ids, case, k).model_dump(mode="json")
+            manifest = recorder.manifest
+            if manifest is not None:
+                failed["run_id"] = manifest.run_id
+                failed["stage_ranking"] = {event["node_id"]: ranking_metrics([item["evidence_id"] for item in event["candidates"]], case, k).model_dump(mode="json") for event in manifest.retrieval_candidates}
+                failed["stage_latency_ms"] = {node.node_id: sum(event.duration_ms for event in manifest.node_executions if event.node_id == node.node_id) for node in manifest.node_executions}
+                failed["token_usage"] = manifest.token_usage.model_dump(mode="json")
+            results.append(failed)
+    valid = [item["ranking"] for item in results if "ranking" in item]
     aggregate: dict[str, Any] = {
-        "cases": len(cases), "completed_cases": len(valid),
+        "cases": len(cases), "completed_cases": sum(item["status"] == "completed" for item in results),
+        "ranked_cases": len(valid),
         "fixture_passes": sum(item["passed"] for item in results),
         "citation_precision": None, "citation_coverage": None, "unsupported_claim_rate": None,
         "peak_memory_bytes": None,
     }
+    import resource
+    import sys
+    rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    aggregate["peak_memory_bytes"] = rss if sys.platform == "darwin" else rss * 1024
+    aggregate["memory_measurement"] = "process-lifetime peak RSS; isolate each arm in a new process"
+    aggregate["abstention_correctness"] = {"correct": sum(item.get("abstention_correct", False) for item in results), "denominator": len(cases)}
+    aggregate["by_query_class"] = {kind: {"cases": sum(case.query_class == kind for case in cases), "fixture_passes": sum(item["passed"] for item in results if item["query_class"] == kind)} for kind in sorted({case.query_class for case in cases})}
+    claims = [claim for item in results for claim in (item.get("claim_support") or [])]
+    if claims:
+        aggregate["unsupported_claim_rate"] = sum(claim["support"] != "supported" for claim in claims) / len(claims)
+        aggregate["unsupported_claim_denominator"] = len(claims)
+        aggregate["claim_metric_scope"] = "attempted generated claims, including verification abstentions"
     for name in ("recall_at_k", "precision_at_k", "mrr", "ndcg_at_k"):
         values = [item[name] for item in valid if item[name] is not None]
         aggregate[name] = {"mean": sum(values) / len(values) if values else None, "denominator": len(values)}
     configuration = {"strategy": strategy.model_dump(mode="json"),
                      "request": request.model_dump(mode="json"),
-                     "k": k, "ranking_component": ranking_component, "split": split}
+                     "asset_versions": runtime.asset_versions, "embedding_identity": runtime.embedding_identity,
+                     "index_revisions": runtime.index_revisions,
+                     "k": k, "ranking_component": ranking_component, "split": split, "allow_local_real": allow_local_real}
     record = ExperimentRecord(
         schema_version="1.1.0",
         dataset_snapshot=dataset.model_dump(mode="json"),
         configuration_snapshot=configuration,
-        pipeline_snapshot=plan.pipeline.model_dump(mode="json"),
+        pipeline_snapshot=pipeline_snapshot(plan.pipeline),
         experiment_id=experiment_id, run_id=run_id, hypothesis=hypothesis, baseline=baseline,
         candidate_strategy=strategy, dataset_fingerprint=dataset.fingerprint,
         config_fingerprint=fingerprint(configuration),
         split=split, status="failed" if any(item["status"] == "failed" for item in results) else "completed",
         case_results=results, metrics=aggregate, failures=failures, decision="iterate",
-        notes="Deterministic fixture measurement only. No semantic retrieval, claim support, or promotion evidence. Missing metrics remain null.",
+        notes=("Local-real experiment, not promoted. Inspect class-level failures and resource limits; missing metrics remain null." if allow_local_real else "Deterministic fixture measurement only. No semantic retrieval, claim support, or promotion evidence. Missing metrics remain null."),
     )
     return write_record(output_directory, record)
