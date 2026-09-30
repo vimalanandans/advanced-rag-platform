@@ -80,5 +80,14 @@ def local_real_runtime(*, trace_store: TraceStore | None = None, environ: dict[s
     runtime.asset_versions = {"generation_options": json.dumps(generation_options, sort_keys=True), "generation": runtime.model_version, "embedding": f"{identity.model_id}@{identity.revision}"}
     if reranker is not None:
         runtime.asset_versions["reranker"] = reranker.identity
-    runtime.set_evidence(ingest_structural_path(Path(__file__).parent.parent / "data/fixtures/rag_basics.md"))
+    release_id = values.get("RAG_WORKBENCH_CORPUS_RELEASE")
+    if release_id:
+        from rag_workbench.evidence_store import EvidenceStore
+        from rag_workbench.contracts import RequestContext
+        store = EvidenceStore(Path(values.get("RAG_WORKBENCH_STORAGE", ".local")) / "evidence")
+        release = store.load(release_id, RequestContext(tenant_id="local", user_id="local-admin"))
+        runtime.set_evidence([item for document in release.documents for item in document.evidence])
+        runtime.asset_versions["corpus_release"] = release_id
+    else:
+        runtime.set_evidence(ingest_structural_path(Path(__file__).parent.parent / "data/fixtures/rag_basics.md"))
     return runtime

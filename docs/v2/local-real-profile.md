@@ -24,7 +24,7 @@ export RAG_WORKBENCH_QDRANT_COLLECTION=rag_evidence_v2
 python3 -m uvicorn rag_workbench.api:app --host 127.0.0.1 --port 8000
 ```
 
-The API selects `configs/pipelines/local-real.yaml` when this profile is set. Missing model identity fails startup; missing/drifted models and incompatible dimensions fail execution. This path still uses the checked-in fixture corpus. Corpus management/publication and held-out evaluation are separate upcoming slices.
+The API selects `configs/pipelines/local-real.yaml` when this profile is set. Missing model identity fails startup; missing/drifted models and incompatible dimensions fail execution. This path uses the checked-in fixture unless `RAG_WORKBENCH_CORPUS_RELEASE` selects an approved immutable release. See [corpus publication](corpus-publication.md). Index-build promotion and representative quality acceptance remain pending.
 
 The embedding adapter bounds batch count/input bytes and checks response cardinality, dimensions and finite/nonzero values. Both embedding and generation digest checks reject mutable-tag drift. Generation uses the remaining runtime deadline as its network timeout and sets an output-token limit; this is not preemptive cancellation and multiple HTTP calls can still exceed a single wall-clock deadline before runtime rejects the result.
 

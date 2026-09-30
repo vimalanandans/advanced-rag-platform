@@ -17,7 +17,7 @@ Updated 2026-09-30. Specifications cover the full scope; runtime delivery is inc
 ## Current limits and next steps
 
 - Native Ollama and Docker Desktop are now running on the 18 GiB host. Compose configuration and Qdrant/PostgreSQL startup passed. Real development runs expose generation timeouts and rejected claims; see [live findings](local-live-findings.md). Full Compose flow, PostgreSQL restart durability, representative quality and resource acceptance remain unverified. Ruff remains unavailable.
-- The local-real profile is experimental, using the checked-in corpus. Managed ingestion/publication, immutable source storage and corpus/index releases remain pending.
+- The local-real profile is experimental. Immutable local originals, staged/approved corpus releases and pinned runtime loading are implemented; source/approval/PDF/scope tests cover them. Durable ingestion jobs, index-build promotion and representative corpus acceptance remain pending. See [corpus publication](corpus-publication.md).
 - Claim verification checks complete quoted sentences only; general semantic entailment, inferred contradictions and calibrated evidence sufficiency remain pending.
 - Query classification retains every lane by default. Real A–F experiments now execute with pinned Nomic, Qwen 2B and an offline CPU cross-encoder. All arms passed only 5/11 synthetic held-out expectations; no promotion is justified. Source-fidelity parsing now accepts adjacent-line citations, and failed runs retain completed retrieval metrics. See experiments/v2-07-generation.
 - Representative domain held-out/adversarial data, calibrated per-class metrics, token telemetry, full experiment promotion/rollback and Studio inspection remain pending.

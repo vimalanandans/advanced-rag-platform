@@ -21,41 +21,43 @@ This file combines the Markdown documentation under `docs/` for convenient readi
 15. `adr/014-conservative-context-and-claim-verification.md`
 16. `adr/015-controlled-strategy-comparisons.md`
 17. `adr/016-live-evaluation-and-citation-layout.md`
-18. `adr/template.md`
-19. `api/README.md`
-20. `architecture/README.md`
-21. `architecture/system.md`
-22. `data-engineer-guide/README.md`
-23. `definition-of-done/README.md`
-24. `design-principles/README.md`
-25. `developer-guide/README.md`
-26. `evaluation/README.md`
-27. `observability/README.md`
-28. `operations/README.md`
-29. `product/roadmap-and-specification.md`
-30. `product-ux/README.md`
-31. `product-ux/ai-native-workspace-guide.md`
-32. `reference/configuration.md`
-33. `research/README.md`
-34. `research/local-reranking.md`
-35. `research/local-retrieval-baseline.md`
-36. `research/qdrant-authorized-point-filter.md`
-37. `security/README.md`
-38. `testing/README.md`
-39. `user-guide/first-local-run.md`
-40. `v2/current-system-assessment.md`
-41. `v2/evaluation-plan.md`
-42. `v2/implementation-status.md`
-43. `v2/local-live-findings.md`
-44. `v2/local-real-profile.md`
-45. `v2/migration-plan.md`
-46. `v2/requirements.md`
-47. `v2/research-plan.md`
-48. `v2/runtime-contract.md`
-49. `v2/strategy-comparison.md`
-50. `v2/target-architecture.md`
-51. `v2/verification-contract.md`
-52. `validation/README.md`
+18. `adr/017-immutable-corpus-publication.md`
+19. `adr/template.md`
+20. `api/README.md`
+21. `architecture/README.md`
+22. `architecture/system.md`
+23. `data-engineer-guide/README.md`
+24. `definition-of-done/README.md`
+25. `design-principles/README.md`
+26. `developer-guide/README.md`
+27. `evaluation/README.md`
+28. `observability/README.md`
+29. `operations/README.md`
+30. `product/roadmap-and-specification.md`
+31. `product-ux/README.md`
+32. `product-ux/ai-native-workspace-guide.md`
+33. `reference/configuration.md`
+34. `research/README.md`
+35. `research/local-reranking.md`
+36. `research/local-retrieval-baseline.md`
+37. `research/qdrant-authorized-point-filter.md`
+38. `security/README.md`
+39. `testing/README.md`
+40. `user-guide/first-local-run.md`
+41. `v2/corpus-publication.md`
+42. `v2/current-system-assessment.md`
+43. `v2/evaluation-plan.md`
+44. `v2/implementation-status.md`
+45. `v2/local-live-findings.md`
+46. `v2/local-real-profile.md`
+47. `v2/migration-plan.md`
+48. `v2/requirements.md`
+49. `v2/research-plan.md`
+50. `v2/runtime-contract.md`
+51. `v2/strategy-comparison.md`
+52. `v2/target-architecture.md`
+53. `v2/verification-contract.md`
+54. `validation/README.md`
 
 
 ---
@@ -461,6 +463,21 @@ Live generation failures exposed two measurement gaps: completed retrieval disap
 The source-sentence verifier 1.0.1 accepts an identifier on the immediately following line. It still requires an exact complete normalized sentence from that identified source. Unknown citations, paraphrases and altered qualifiers fail; an orphan citation cannot support a claim. Version 1.0.0 remains registered for old graphs.
 
 A prompt candidate at generation/context 2.0.1 was evaluated after observing a literal placeholder citation. The model then emitted next-line citations, and parser correction alone did not produce consistent gains. Keep 2.0.0 as the default prompt. Retain 2.0.1 as an explicit experimental component and preserve every failed experiment. Do not promote a strategy from these small synthetic cases.
+
+
+---
+
+<!-- Source: adr/017-immutable-corpus-publication.md -->
+
+# ADR-017: Immutable local originals and explicit corpus releases
+
+Status: accepted for local-admin publication; index-release promotion remains separate.
+
+Parsing a file must not approve it or depend on bytes that can change after fingerprinting. Store originals in a tenant-separated content-addressed directory before parsing a temporary snapshot. Remap all evidence and hierarchy IDs to stable document/revision/locator identities. Keep full original hashes and parser/chunker/policy versions in the release.
+
+Staging produces an immutable review-required release. Approval creates a different immutable release; it never rewrites the draft. The runtime selects an explicit approved release ID, validates release/original integrity and retains that ID in manifests. There is no mutable latest pointer. Rollback selects a prior approved compatible release; vector identities already bind content and embedding configuration.
+
+Only the authenticated local administrator contract is supported. Source resolution checks the selected release, corpus, tenant, evidence identity, validity, revision and applicability. Local filesystem administration remains trusted. No remote upload, parser sandbox, multi-user approval workflow, garbage collection, durable ingestion queue or atomic index-build promotion is claimed. Unreferenced original objects may remain after failed staging and are retained rather than deleted automatically.
 
 
 ---
@@ -1991,6 +2008,32 @@ and the [Definition of Done](definition-of-done/README.md).
 
 ---
 
+<!-- Source: v2/corpus-publication.md -->
+
+# Local immutable corpus publication
+
+The local-real runtime can load an explicitly approved Markdown/PDF corpus release. Originals and releases live beneath `<storage>/evidence/<tenant-hash>/`; files are created without overwrite and verified by SHA-256 on read. Parsing uses the saved bytes. A source path changing later cannot alter an existing release.
+
+```bash
+python3 scripts/publish_corpus.py stage --corpus manuals manual.md policy.pdf
+# Inspect the returned draft ID before approval:
+python3 scripts/publish_corpus.py inspect '<draft-id>'
+python3 scripts/publish_corpus.py approve '<draft-id>'
+# Select the different approved ID in the local-real profile:
+export RAG_WORKBENCH_CORPUS_RELEASE='<approved-id>'
+```
+
+The commands default to tenant `local`, principal `local-admin` and `.local/evidence`; `--storage` and `--tenant` are explicit CLI options before the subcommand. Runtime loading currently uses the local profile's tenant and `<RAG_WORKBENCH_STORAGE>/evidence`. Without a release ID the existing fixture remains available. Drafts, missing originals, tampered hashes and cross-tenant reads fail closed. No approval is inferred from successful extraction.
+
+A document key is its corpus plus filename. Duplicate filenames in a release are rejected; rename or split the corpus intentionally. Markdown hierarchy links are remapped to immutable evidence IDs; PDF retains page locators. Each original is limited to 20 MiB by default. Source resolution uses a selected approved release and evidence ID, with scope checks; raw object hashes are not a public source-read interface.
+
+The store is for trusted local administration. It does not sandbox PDF parsing or expose a network upload endpoint. Empty/scanned PDFs without extracted text fail staging. OCR, durable jobs, source retention/garbage collection, selective ACL editing and atomic index-build promotion are still pending. A corpus release pins source material; it does not certify retrieval quality or model/index compatibility. See ADR-017.
+
+Validation covers deterministic staging, immutable revisions, explicit approval, database-free reopen, original resolution, scope/revision rejection, invalid formats, size bounds, duplicate IDs, content tampering and generated PDF page extraction. A checked-in Markdown fixture was staged and approved through the CLI and passed into a real-model runtime smoke run; answer-quality acceptance remains separate.
+
+
+---
+
 <!-- Source: v2/current-system-assessment.md -->
 
 # V2 current-system assessment
@@ -2133,7 +2176,7 @@ Updated 2026-09-30. Specifications cover the full scope; runtime delivery is inc
 ## Current limits and next steps
 
 - Native Ollama and Docker Desktop are now running on the 18 GiB host. Compose configuration and Qdrant/PostgreSQL startup passed. Real development runs expose generation timeouts and rejected claims; see [live findings](v2/local-live-findings.md). Full Compose flow, PostgreSQL restart durability, representative quality and resource acceptance remain unverified. Ruff remains unavailable.
-- The local-real profile is experimental, using the checked-in corpus. Managed ingestion/publication, immutable source storage and corpus/index releases remain pending.
+- The local-real profile is experimental. Immutable local originals, staged/approved corpus releases and pinned runtime loading are implemented; source/approval/PDF/scope tests cover them. Durable ingestion jobs, index-build promotion and representative corpus acceptance remain pending. See [corpus publication](v2/corpus-publication.md).
 - Claim verification checks complete quoted sentences only; general semantic entailment, inferred contradictions and calibrated evidence sufficiency remain pending.
 - Query classification retains every lane by default. Real A–F experiments now execute with pinned Nomic, Qwen 2B and an offline CPU cross-encoder. All arms passed only 5/11 synthetic held-out expectations; no promotion is justified. Source-fidelity parsing now accepts adjacent-line citations, and failed runs retain completed retrieval metrics. See experiments/v2-07-generation.
 - Representative domain held-out/adversarial data, calibrated per-class metrics, token telemetry, full experiment promotion/rollback and Studio inspection remain pending.
@@ -2205,7 +2248,7 @@ export RAG_WORKBENCH_QDRANT_COLLECTION=rag_evidence_v2
 python3 -m uvicorn rag_workbench.api:app --host 127.0.0.1 --port 8000
 ```
 
-The API selects `configs/pipelines/local-real.yaml` when this profile is set. Missing model identity fails startup; missing/drifted models and incompatible dimensions fail execution. This path still uses the checked-in fixture corpus. Corpus management/publication and held-out evaluation are separate upcoming slices.
+The API selects `configs/pipelines/local-real.yaml` when this profile is set. Missing model identity fails startup; missing/drifted models and incompatible dimensions fail execution. This path uses the checked-in fixture unless `RAG_WORKBENCH_CORPUS_RELEASE` selects an approved immutable release. See [corpus publication](v2/corpus-publication.md). Index-build promotion and representative quality acceptance remain pending.
 
 The embedding adapter bounds batch count/input bytes and checks response cardinality, dimensions and finite/nonzero values. Both embedding and generation digest checks reject mutable-tag drift. Generation uses the remaining runtime deadline as its network timeout and sets an output-token limit; this is not preemptive cancellation and multiple HTTP calls can still exceed a single wall-clock deadline before runtime rejects the result.
 
