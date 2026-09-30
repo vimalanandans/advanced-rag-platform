@@ -12,14 +12,14 @@ Updated 2026-09-30. Specifications cover the full scope; runtime delivery is inc
 | Scope/persistence | Mandatory Qdrant authorized-ID filter, content/scope-sensitive identities, no-overwrite traces and safe errors | 57 tests; provider request doubles, no live database |
 | Retrieval adapters | Persistent BM25, exact lane, pinned Ollama embeddings/generation, Qdrant composition, config schemas and candidate trace metadata | 70 tests; no live semantic-quality claim |
 | Structural/context/verification | Parent links/traversal, twelve query classes, whole-block context/quota decisions, explicit conflicts, complete quoted-sentence citation verification | 89 tests; full graph with provider doubles |
-| Strategy experiment runtime | Local pinned reranker, explicit A–F graphs, experimental F routing, per-process comparison command, policy narrowing, stage metrics and 22 synthetic cases | 105 tests; real comparison blocked by model/service prerequisites |
+| Strategy experiment runtime | Local pinned reranker, explicit A–F graphs, experimental F routing, per-process comparison command, policy narrowing, stage metrics and 22 synthetic cases | 105 tests at implementation; subsequent real A–F results below |
 
 ## Current limits and next steps
 
 - Native Ollama and Docker Desktop are now running on the 18 GiB host. Compose configuration and Qdrant/PostgreSQL startup passed. Real development runs expose generation timeouts and rejected claims; see [live findings](local-live-findings.md). Full Compose flow, PostgreSQL restart durability, representative quality and resource acceptance remain unverified. Ruff remains unavailable.
 - The local-real profile is experimental, using the checked-in corpus. Managed ingestion/publication, immutable source storage and corpus/index releases remain pending.
 - Claim verification checks complete quoted sentences only; general semantic entailment, inferred contradictions and calibrated evidence sufficiency remain pending.
-- Query classification retains every lane by default. Reranking and F routing are executable experimental options; no real A–F comparison or promotion has passed.
+- Query classification retains every lane by default. Real A–F experiments now execute with pinned Nomic, Qwen 2B and an offline CPU cross-encoder. All arms passed only 5/11 synthetic held-out expectations; no promotion is justified. Source-fidelity parsing now accepts adjacent-line citations, and failed runs retain completed retrieval metrics. See experiments/v2-07-generation.
 - Representative domain held-out/adversarial data, calibrated per-class metrics, token telemetry, full experiment promotion/rollback and Studio inspection remain pending.
 - Provider cancellation, advanced error-edge behavior, tools/corrective retrieval, experience memory and learning are not enabled. They remain gated by reproducible A–F evidence.
 

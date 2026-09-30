@@ -109,3 +109,26 @@ def test_unavailable_visual_capability_does_not_fall_through_to_text_answer():
     result = verify_evidence({"candidates": [candidate], "decision": classify_query("Explain this diagram")}, None, {})
     assert not result["sufficient"]
     assert result["limitations"] == ["missing_capability:visual_evidence"]
+
+
+def test_legacy_prompt_components_remain_replayable():
+    from rag_workbench.registry import baseline_registry
+    from rag_workbench.v2_components import register_v2_components, prompt_for, LEGACY_INSTRUCTION
+    registry = baseline_registry()
+    register_v2_components(registry)
+    for identifier in ['generation.local', 'context.evidence_packer']:
+        assert registry.get(identifier + '@2.0.0')
+        assert registry.get(identifier + '@2.0.1')
+    assert prompt_for('question', [], legacy=True).startswith(LEGACY_INSTRUCTION)
+    assert 'copy the bracketed source identifier' in prompt_for('question', [])
+
+
+def test_next_line_citation_preserves_source_fidelity():
+    from rag_workbench.intelligence import verify_quoted_claims
+    from rag_workbench.contracts import Evidence
+    source = Evidence(id='source', document_id='d', source_uri='fixture://d', revision='1', title='d', locator='1', content='Never remove the safety guard.')
+    answer = 'Never remove the safety guard.\n[source]'
+    assert all(c.support == 'supported' for c in verify_quoted_claims(answer, [source], allow_next_line=True))
+    assert any(c.support != 'supported' for c in verify_quoted_claims(answer, [source]))
+    for answer in ['Remove the safety guard.\n[source]', 'Never remove the safety guard.\n[unknown]', '[source]']:
+        assert any(c.support != 'supported' for c in verify_quoted_claims(answer, [source], allow_next_line=True))

@@ -17,3 +17,11 @@ Installed Qwen 0.8B was selected only for a local development probe. The server 
 | Arm D, same settings plus explicit 8192 context | 3/3 | 1/3 | 1.095–3.314 s; expected evidence ranked first for all three; two answers abstained after failed verification |
 
 Records are retained under `experiments/v2-06-live/`. These are not controlled A-versus-D quality comparisons: configuration and warm state changed. The last two runs diagnose runtime behavior; the small development set cannot establish strategy improvement. Peak RSS describes the Python process only, excluding Ollama and Docker. No strategy promotion is justified. Next: inspect generation failures, complete equal-configuration A–F comparisons, measure the full service resource envelope and run held-out/adversarial cases.
+
+## Six-arm follow-up
+
+A pinned, offline CPU MiniLM reranker enabled real E/F runs. The installed Qwen 2B generator passed 2/3 initial development cases in arms B–F. A versioned prompt clarification regressed results; it remains experimental. Citation verifier 1.0.1 accepts an immediately adjacent citation line while retaining full source-sentence matching. The default prompt remains 2.0.0.
+
+With the retained default prompt and revised parser, all six arms completed the 11 synthetic held-out cases; each passed only 5/11 expectations. Recall@5 was 1.0 for the six cases with relevant evidence labels, while generated claims failed verification. The five expected abstentions passed. The experiment does not justify reranking, routing or advanced-retrieval promotion. Preserve the held-out set; do not optimize against its answers. A real domain corpus is required for representative acceptance.
+
+The native PostgreSQL integration check could not import the declared `psycopg` dependency. A project-local installation attempt encountered a malformed proxy; a direct retry failed DNS. PostgreSQL container startup alone is not persistence acceptance. These failures are recorded in the loop rather than waived.

@@ -286,11 +286,26 @@ def run_experiment(
                 self.ranked_ids = [candidate.evidence.id for candidate in outputs["candidates"]]
             return outputs
 
+    class RecordingTraceStore:
+        def __init__(self):
+            self.manifest = None
+
+        def save(self, manifest):
+            runtime.trace_store.save(manifest)
+            self.manifest = manifest.model_copy(deep=True)
+
+        def get(self, run_id):
+            return runtime.trace_store.get(run_id)
+
+        def list(self):
+            return runtime.trace_store.list()
+
     results: list[dict[str, Any]] = []
     failures: list[str] = []
     for case in cases:
         registry = RecordingRegistry()
-        measured = WorkbenchRuntime(registry=registry, trace_store=runtime.trace_store, model_version=runtime.model_version)
+        recorder = RecordingTraceStore()
+        measured = WorkbenchRuntime(registry=registry, trace_store=recorder, model_version=runtime.model_version)
         measured.embedding_identity = runtime.embedding_identity
         measured.index_revisions = runtime.index_revisions
         measured.asset_versions = runtime.asset_versions
@@ -328,11 +343,23 @@ def run_experiment(
         except Exception as error:
             # Error class only: provider exception text can contain private URLs/data.
             failures.append(f"{case.case_id}: {type(error).__name__}")
-            results.append({"case_id": case.case_id, "query_class": case.query_class,
-                            "status": "failed", "passed": False, "error_type": type(error).__name__})
-    valid = [item["ranking"] for item in results if item["status"] == "completed"]
+            failed = {"case_id": case.case_id, "query_class": case.query_class,
+                      "status": "failed", "passed": False, "error_type": type(error).__name__,
+                      "latency_ms": (time.monotonic() - started) * 1000}
+            if registry.ranked_ids is not None:
+                failed["ranked_evidence_ids"] = registry.ranked_ids
+                failed["ranking"] = ranking_metrics(registry.ranked_ids, case, k).model_dump(mode="json")
+            manifest = recorder.manifest
+            if manifest is not None:
+                failed["run_id"] = manifest.run_id
+                failed["stage_ranking"] = {event["node_id"]: ranking_metrics([item["evidence_id"] for item in event["candidates"]], case, k).model_dump(mode="json") for event in manifest.retrieval_candidates}
+                failed["stage_latency_ms"] = {node.node_id: sum(event.duration_ms for event in manifest.node_executions if event.node_id == node.node_id) for node in manifest.node_executions}
+                failed["token_usage"] = manifest.token_usage.model_dump(mode="json")
+            results.append(failed)
+    valid = [item["ranking"] for item in results if "ranking" in item]
     aggregate: dict[str, Any] = {
-        "cases": len(cases), "completed_cases": len(valid),
+        "cases": len(cases), "completed_cases": sum(item["status"] == "completed" for item in results),
+        "ranked_cases": len(valid),
         "fixture_passes": sum(item["passed"] for item in results),
         "citation_precision": None, "citation_coverage": None, "unsupported_claim_rate": None,
         "peak_memory_bytes": None,
@@ -354,6 +381,8 @@ def run_experiment(
         aggregate[name] = {"mean": sum(values) / len(values) if values else None, "denominator": len(values)}
     configuration = {"strategy": strategy.model_dump(mode="json"),
                      "request": request.model_dump(mode="json"),
+                     "asset_versions": runtime.asset_versions, "embedding_identity": runtime.embedding_identity,
+                     "index_revisions": runtime.index_revisions,
                      "k": k, "ranking_component": ranking_component, "split": split, "allow_local_real": allow_local_real}
     record = ExperimentRecord(
         schema_version="1.1.0",

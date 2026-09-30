@@ -1,0 +1,345 @@
+{
+  "development-all": {
+    "local-real-a": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 0,
+      "failures": [
+        "dev-id: fixture expectations failed",
+        "dev-semantic: fixture expectations failed",
+        "dev-procedure: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-b": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 2,
+      "failures": [
+        "dev-id: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-c": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 2,
+      "failures": [
+        "dev-id: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-d": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 2,
+      "failures": [
+        "dev-id: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-e": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 2,
+      "failures": [
+        "dev-id: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-f": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 2,
+      "failures": [
+        "dev-id: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    }
+  },
+  "development-prompt-2.0.1": {
+    "local-real-a": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 0,
+      "failures": [
+        "dev-id: fixture expectations failed",
+        "dev-semantic: fixture expectations failed",
+        "dev-procedure: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-b": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 0,
+      "failures": [
+        "dev-id: fixture expectations failed",
+        "dev-semantic: fixture expectations failed",
+        "dev-procedure: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-c": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 0,
+      "failures": [
+        "dev-id: fixture expectations failed",
+        "dev-semantic: fixture expectations failed",
+        "dev-procedure: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-d": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 0,
+      "failures": [
+        "dev-id: fixture expectations failed",
+        "dev-semantic: fixture expectations failed",
+        "dev-procedure: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-e": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 0,
+      "failures": [
+        "dev-id: fixture expectations failed",
+        "dev-semantic: fixture expectations failed",
+        "dev-procedure: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-f": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 0,
+      "failures": [
+        "dev-id: fixture expectations failed",
+        "dev-semantic: fixture expectations failed",
+        "dev-procedure: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    }
+  },
+  "development-citation-1.0.1": {
+    "local-real-a": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 2,
+      "failures": [
+        "dev-semantic: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-b": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 1,
+      "failures": [
+        "dev-id: fixture expectations failed",
+        "dev-semantic: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-c": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 1,
+      "failures": [
+        "dev-id: fixture expectations failed",
+        "dev-semantic: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-d": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 1,
+      "failures": [
+        "dev-id: fixture expectations failed",
+        "dev-semantic: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-e": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 2,
+      "failures": [
+        "dev-semantic: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    },
+    "local-real-f": {
+      "cases": 3,
+      "completed": 3,
+      "passes": 2,
+      "failures": [
+        "dev-semantic: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 3
+      }
+    }
+  },
+  "held-out-default-prompt": {
+    "local-real-a": {
+      "cases": 11,
+      "completed": 11,
+      "passes": 5,
+      "failures": [
+        "hold-id: fixture expectations failed",
+        "hold-semantic: fixture expectations failed",
+        "hold-procedure: fixture expectations failed",
+        "hold-temporal: fixture expectations failed",
+        "hold-multihop: fixture expectations failed",
+        "hold-comparison: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 6
+      }
+    },
+    "local-real-b": {
+      "cases": 11,
+      "completed": 11,
+      "passes": 5,
+      "failures": [
+        "hold-id: fixture expectations failed",
+        "hold-semantic: fixture expectations failed",
+        "hold-procedure: fixture expectations failed",
+        "hold-temporal: fixture expectations failed",
+        "hold-multihop: fixture expectations failed",
+        "hold-comparison: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 6
+      }
+    },
+    "local-real-c": {
+      "cases": 11,
+      "completed": 11,
+      "passes": 5,
+      "failures": [
+        "hold-id: fixture expectations failed",
+        "hold-semantic: fixture expectations failed",
+        "hold-procedure: fixture expectations failed",
+        "hold-temporal: fixture expectations failed",
+        "hold-multihop: fixture expectations failed",
+        "hold-comparison: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 6
+      }
+    },
+    "local-real-d": {
+      "cases": 11,
+      "completed": 11,
+      "passes": 5,
+      "failures": [
+        "hold-id: fixture expectations failed",
+        "hold-semantic: fixture expectations failed",
+        "hold-procedure: fixture expectations failed",
+        "hold-temporal: fixture expectations failed",
+        "hold-multihop: fixture expectations failed",
+        "hold-comparison: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 6
+      }
+    },
+    "local-real-e": {
+      "cases": 11,
+      "completed": 11,
+      "passes": 5,
+      "failures": [
+        "hold-id: fixture expectations failed",
+        "hold-semantic: fixture expectations failed",
+        "hold-procedure: fixture expectations failed",
+        "hold-temporal: fixture expectations failed",
+        "hold-multihop: fixture expectations failed",
+        "hold-comparison: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 6
+      }
+    },
+    "local-real-f": {
+      "cases": 11,
+      "completed": 11,
+      "passes": 5,
+      "failures": [
+        "hold-id: fixture expectations failed",
+        "hold-semantic: fixture expectations failed",
+        "hold-procedure: fixture expectations failed",
+        "hold-temporal: fixture expectations failed",
+        "hold-multihop: fixture expectations failed",
+        "hold-comparison: fixture expectations failed"
+      ],
+      "recall_at_k": {
+        "mean": 1.0,
+        "denominator": 6
+      }
+    }
+  }
+}

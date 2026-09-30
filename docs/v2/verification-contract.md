@@ -21,3 +21,7 @@ Multiple eligible revisions of one document are unresolved unless request policy
 The generator requests one complete source sentence and citation ID per line. `verbatim-sentence@1.0.0` checks complete normalized sentence equality and the citation's existence in the selected evidence. Changed warnings, fragments, paraphrases and invented IDs fail closed. Empty output and explicit ABSTAIN abstain. Any failed claim clears delivered citations and returns a verification abstention; claim records remain inspectable in the response.
 
 This checks quoted source fidelity, not source truth, relevance completeness, or unrestricted semantic entailment. Do not market it as calibrated general claim support. A later verifier must have separate identity, fixtures and measured acceptance.
+
+## Citation layout revision
+
+`verification.claims@1.0.1` additionally accepts a citation immediately following its claim on the next line. This changes layout parsing only: the full sentence and actual source ID must still match. The preceding `1.0.0` verifier remains available for replay. Experimental generation/context `2.0.1` clarified citation instructions but did not establish a consistent measured gain; default graphs retain the `2.0.0` prompt. See ADR-016 and `experiments/v2-07-generation`.

@@ -83,7 +83,7 @@ pipeline:
     outputs:
       candidates: candidates
   - id: claims
-    component: verification.claims@1.0.0
+    component: verification.claims@1.0.1
     inputs:
       answer: generate.answer
       citations: generate.citations

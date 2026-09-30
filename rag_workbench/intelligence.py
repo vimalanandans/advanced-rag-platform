@@ -90,7 +90,7 @@ def normalize(text: str) -> str:
     return " ".join(text.split()).casefold()
 
 
-def verify_quoted_claims(answer: str, evidence: list[Evidence]) -> list[ClaimSupport]:
+def verify_quoted_claims(answer: str, evidence: list[Evidence], *, allow_next_line: bool = False) -> list[ClaimSupport]:
     """Verify exact complete source sentences and explicit citation IDs.
 
     This checks source fidelity, not source truth or general semantic entailment.
@@ -98,7 +98,19 @@ def verify_quoted_claims(answer: str, evidence: list[Evidence]) -> list[ClaimSup
     """
     sources = {item.id: {normalize(value) for value in sentences(item.content)} for item in evidence}
     results = []
-    for line in answer.splitlines():
+    lines = answer.splitlines()
+    if allow_next_line:
+        joined = []
+        index = 0
+        while index < len(lines):
+            line = lines[index]
+            if line.strip() and index + 1 < len(lines) and re.fullmatch(r"\s*\[[^\[\]]+\]\s*", lines[index + 1]):
+                line += " " + lines[index + 1].strip()
+                index += 1
+            joined.append(line)
+            index += 1
+        lines = joined
+    for line in lines:
         if not line.strip():
             continue
         match = re.fullmatch(r"\s*(.+?)\s+\[([^\[\]]+)\]\s*", line)
@@ -106,5 +118,6 @@ def verify_quoted_claims(answer: str, evidence: list[Evidence]) -> list[ClaimSup
         supported = evidence_id in sources and normalize(claim) in sources[evidence_id]
         results.append(ClaimSupport(claim=claim, evidence_ids=[evidence_id] if evidence_id in sources else [],
                                     support="supported" if supported else "unsupported", confidence=1.0 if supported else 0.0,
-                                    action="keep" if supported else "abstain"))
+                                    action="keep" if supported else "abstain",
+                                    verifier="verbatim-sentence@1.0.1" if allow_next_line else "verbatim-sentence@1.0.0"))
     return results

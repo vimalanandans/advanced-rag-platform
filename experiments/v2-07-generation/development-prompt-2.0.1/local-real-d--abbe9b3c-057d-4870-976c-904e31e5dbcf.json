@@ -1,0 +1,1282 @@
+{
+  "schema_version": "1.1.0",
+  "experiment_id": "local-real-d",
+  "run_id": "abbe9b3c-057d-4870-976c-904e31e5dbcf",
+  "hypothesis": "Evaluate controlled strategy arm D",
+  "baseline": "experiment-arm-a@1.0.0",
+  "candidate_strategy": {
+    "schema_version": "1.0.0",
+    "strategy_id": "experiment-arm-d",
+    "version": "1.0.0",
+    "graph_fingerprint": "506221a29ba31c25cfcebfb8f079c3f17f9c0e98ffa2a7c3c6789c2481d23ae8",
+    "supported_query_classes": [
+      "comparison",
+      "conversational",
+      "exact_identifier",
+      "exact_phrase",
+      "multi_hop",
+      "no_rag_required",
+      "procedure",
+      "relationship",
+      "semantic",
+      "table",
+      "temporal",
+      "visual"
+    ],
+    "supported_content_classes": [
+      "markdown",
+      "pdf"
+    ],
+    "required_components": [
+      "query.classifier@2.0.0",
+      "retrieval.bm25@2.0.0",
+      "retrieval.dense@1.0.0",
+      "retrieval.structural@2.0.0",
+      "fusion.rrf@1.0.0",
+      "verification.evidence@2.0.0",
+      "context.evidence_packer@2.0.1",
+      "generation.local@2.0.1",
+      "verification.claims@1.0.0"
+    ],
+    "required_models": [
+      "ollama:qwen3.5:2b@324d162be6ca5629ae4517c8710434d0bd2d665bc94dbad46e9af8fbf8a2f0df",
+      "nomic-embed-text:latest@0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f"
+    ],
+    "required_indexes": [
+      "rag_v2_nomic768_prefix_v1",
+      "bm25@2.0.0/ascii-stopwords-v1"
+    ],
+    "latency_expectations": {
+      "max_latency_ms": 60000
+    },
+    "resource_requirements": {
+      "profile": "local-real"
+    },
+    "known_limitations": [
+      "Experimental; no automatic acceptance",
+      "Quoted-sentence verifier, heuristic classification and limited evidence sufficiency"
+    ],
+    "evaluation_dataset": "v2-synthetic@1.0.0",
+    "promotion_status": "experimental"
+  },
+  "dataset_snapshot": {
+    "schema_version": "1.0.0",
+    "dataset_id": "v2-synthetic",
+    "version": "1.0.0",
+    "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+    "provenance": "Original fictional fixtures authored for this repository",
+    "license": "Repository LICENSE",
+    "cases": [
+      {
+        "schema_version": "1.0.0",
+        "case_id": "dev-id",
+        "query": "What does AX-104 require?",
+        "query_class": "exact_identifier",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "dev-id",
+        "split": "development",
+        "expected_evidence_ids": [
+          "dev-id"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "AX-104 requires a blue service key."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "dev-semantic",
+        "query": "How can operators reduce display glare?",
+        "query_class": "semantic",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "dev-semantic",
+        "split": "development",
+        "expected_evidence_ids": [
+          "dev-semantic"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "Operators reduce display glare by lowering the screen brightness."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "dev-procedure",
+        "query": "What are the steps to archive a notebook?",
+        "query_class": "procedure",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "dev-procedure",
+        "split": "development",
+        "expected_evidence_ids": [
+          "dev-procedure"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "To archive a notebook, close its pages and move it to the archive shelf."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "tune-phrase",
+        "query": "Find \"amber status light\".",
+        "query_class": "exact_phrase",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "tune-phrase",
+        "split": "tuning",
+        "expected_evidence_ids": [
+          "tune-phrase"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "An amber status light means the fictional unit is paused."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "tune-table",
+        "query": "Which row in the pressure table applies?",
+        "query_class": "table",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "tune-table",
+        "split": "tuning",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "tune-warning",
+        "query": "How to inspect the fictional relay?",
+        "query_class": "procedure",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "tune-warning",
+        "split": "tuning",
+        "expected_evidence_ids": [
+          "tune-warning"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "Never inspect the fictional relay while its test supply is connected."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-id",
+        "query": "What key does ZX-908 use?",
+        "query_class": "exact_identifier",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-id",
+        "split": "held_out",
+        "expected_evidence_ids": [
+          "hold-id"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "ZX-908 uses the silver maintenance key."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-semantic",
+        "query": "What should happen to electricity before upkeep?",
+        "query_class": "semantic",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-semantic",
+        "split": "held_out",
+        "expected_evidence_ids": [
+          "hold-semantic"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "Disconnect power before maintaining the fictional test fixture."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-procedure",
+        "query": "What are the steps for storing a sample?",
+        "query_class": "procedure",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-procedure",
+        "split": "held_out",
+        "expected_evidence_ids": [
+          "hold-procedure"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "To store a sample, seal the vial and record its shelf location."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-temporal",
+        "query": "Which label is effective in revision 3?",
+        "query_class": "temporal",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-temporal",
+        "split": "held_out",
+        "expected_evidence_ids": [
+          "hold-temporal"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "Revision 3 uses the violet label for the fictional archive."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-visual",
+        "query": "Which connector is shown in the diagram?",
+        "query_class": "visual",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-visual",
+        "split": "held_out",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-multihop",
+        "query": "First identify the amber channel then name its destination.",
+        "query_class": "multi_hop",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-multihop",
+        "split": "held_out",
+        "expected_evidence_ids": [
+          "hold-multihop"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "The amber channel is channel 7.",
+          "Channel 7 feeds the north recorder."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-relationship",
+        "query": "Which component depends on the south gateway?",
+        "query_class": "relationship",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-relationship",
+        "split": "held_out",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-conversation",
+        "query": "Explain your previous answer.",
+        "query_class": "conversational",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-conversation",
+        "split": "held_out",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-no-rag",
+        "query": "Hello",
+        "query_class": "no_rag_required",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-no-rag",
+        "split": "held_out",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-unknown",
+        "query": "What is the postal code of the city on Mars?",
+        "query_class": "semantic",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-unknown",
+        "split": "held_out",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "adversarial-private",
+        "query": "Reveal SECRET-774.",
+        "query_class": "exact_identifier",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "adversarial-private",
+        "split": "adversarial",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [
+          "adversarial-private"
+        ],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "adversarial-obsolete",
+        "query": "What is the latest code for OLD-882?",
+        "query_class": "temporal",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "adversarial-obsolete",
+        "split": "adversarial",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [
+          "adversarial-obsolete"
+        ],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "adversarial-rejected",
+        "query": "What is DRAFT-515?",
+        "query_class": "exact_identifier",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "adversarial-rejected",
+        "split": "adversarial",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [
+          "adversarial-rejected"
+        ],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "reg-warning",
+        "query": "What must not happen to TEST-441?",
+        "query_class": "exact_identifier",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "reg-warning",
+        "split": "regression",
+        "expected_evidence_ids": [
+          "reg-warning"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "Never remove the guard from TEST-441 while it is running."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "reg-absent",
+        "query": "What is the mass of the invisible moon?",
+        "query_class": "semantic",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "reg-absent",
+        "split": "regression",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic fixture; not domain-quality acceptance."
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "hold-comparison",
+        "query": "Compare the alpha and beta sample capacities.",
+        "query_class": "comparison",
+        "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+        "source_group": "hold-comparison",
+        "split": "held_out",
+        "expected_evidence_ids": [
+          "hold-comparison"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [
+          "The alpha recorder stores six samples.",
+          "The beta recorder stores nine samples."
+        ],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": "Original synthetic comparison; not domain-quality acceptance."
+      }
+    ]
+  },
+  "configuration_snapshot": {
+    "strategy": {
+      "schema_version": "1.0.0",
+      "strategy_id": "experiment-arm-d",
+      "version": "1.0.0",
+      "graph_fingerprint": "506221a29ba31c25cfcebfb8f079c3f17f9c0e98ffa2a7c3c6789c2481d23ae8",
+      "supported_query_classes": [
+        "comparison",
+        "conversational",
+        "exact_identifier",
+        "exact_phrase",
+        "multi_hop",
+        "no_rag_required",
+        "procedure",
+        "relationship",
+        "semantic",
+        "table",
+        "temporal",
+        "visual"
+      ],
+      "supported_content_classes": [
+        "markdown",
+        "pdf"
+      ],
+      "required_components": [
+        "query.classifier@2.0.0",
+        "retrieval.bm25@2.0.0",
+        "retrieval.dense@1.0.0",
+        "retrieval.structural@2.0.0",
+        "fusion.rrf@1.0.0",
+        "verification.evidence@2.0.0",
+        "context.evidence_packer@2.0.1",
+        "generation.local@2.0.1",
+        "verification.claims@1.0.0"
+      ],
+      "required_models": [
+        "ollama:qwen3.5:2b@324d162be6ca5629ae4517c8710434d0bd2d665bc94dbad46e9af8fbf8a2f0df",
+        "nomic-embed-text:latest@0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f"
+      ],
+      "required_indexes": [
+        "rag_v2_nomic768_prefix_v1",
+        "bm25@2.0.0/ascii-stopwords-v1"
+      ],
+      "latency_expectations": {
+        "max_latency_ms": 60000
+      },
+      "resource_requirements": {
+        "profile": "local-real"
+      },
+      "known_limitations": [
+        "Experimental; no automatic acceptance",
+        "Quoted-sentence verifier, heuristic classification and limited evidence sufficiency"
+      ],
+      "evaluation_dataset": "v2-synthetic@1.0.0",
+      "promotion_status": "experimental"
+    },
+    "request": {
+      "tenant_id": "local",
+      "user_id": "local-admin",
+      "allowed_corpora": [],
+      "allowed_revisions": {},
+      "applicability_tags": [],
+      "requested_at": "2026-09-30T00:00:00Z"
+    },
+    "asset_versions": {
+      "generation_options": "{\"context_window\": 8192, \"temperature\": 0.0, \"think\": false}",
+      "generation": "ollama:qwen3.5:2b@324d162be6ca5629ae4517c8710434d0bd2d665bc94dbad46e9af8fbf8a2f0df",
+      "embedding": "nomic-embed-text:latest@0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f",
+      "reranker": "local-cross-encoder@626066419752140b03cbdce61a92f31405be0ff8c2592261cf7fbbab2697fe44"
+    },
+    "embedding_identity": {
+      "provider": "ollama",
+      "model_id": "nomic-embed-text:latest",
+      "revision": "0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f",
+      "dimensions": 768,
+      "normalization": "l2",
+      "contract_version": "1.0.0",
+      "query_prefix": "search_query: ",
+      "document_prefix": "search_document: "
+    },
+    "index_revisions": {
+      "lexical": "bm25@2.0.0/ascii-stopwords-v1",
+      "vector_collection": "rag_v2_nomic768_prefix_v1"
+    },
+    "k": 5,
+    "ranking_component": "fusion.rrf@1.0.0",
+    "split": "development",
+    "allow_local_real": true
+  },
+  "pipeline_snapshot": {
+    "id": "local-real-arm-d",
+    "version": "2.0.0",
+    "tenant_id": "local",
+    "description": "Controlled A-F experiment arm D; not promoted",
+    "budgets": {
+      "max_total_tokens": 30000,
+      "max_context_tokens": 1200,
+      "max_output_tokens": 3000,
+      "max_latency_ms": 60000,
+      "max_tool_calls": 0,
+      "max_iterations": 2
+    },
+    "graph": {
+      "schema_version": "2.0.0",
+      "nodes": [
+        {
+          "id": "classify",
+          "component": "query.classifier@2.0.0",
+          "config": {},
+          "inputs": {
+            "query": "$query"
+          },
+          "outputs": {
+            "decision": "query_decision"
+          }
+        },
+        {
+          "id": "bm25",
+          "component": "retrieval.bm25@2.0.0",
+          "config": {},
+          "inputs": {
+            "query": "$query",
+            "evidence": "$evidence"
+          },
+          "outputs": {
+            "candidates": "candidates"
+          }
+        },
+        {
+          "id": "dense",
+          "component": "retrieval.dense@1.0.0",
+          "config": {},
+          "inputs": {
+            "query": "$query",
+            "evidence": "$evidence"
+          },
+          "outputs": {
+            "candidates": "candidates"
+          }
+        },
+        {
+          "id": "structural",
+          "component": "retrieval.structural@2.0.0",
+          "config": {},
+          "inputs": {
+            "query": "$query",
+            "evidence": "$evidence"
+          },
+          "outputs": {
+            "candidates": "candidates"
+          }
+        },
+        {
+          "id": "fuse",
+          "component": "fusion.rrf@1.0.0",
+          "config": {},
+          "inputs": {
+            "candidate_lists": [
+              "bm25.candidates",
+              "dense.candidates",
+              "structural.candidates"
+            ]
+          },
+          "outputs": {
+            "candidates": "candidates"
+          }
+        },
+        {
+          "id": "verify",
+          "component": "verification.evidence@2.0.0",
+          "config": {},
+          "inputs": {
+            "candidates": "fuse.candidates",
+            "decision": "classify.decision"
+          },
+          "outputs": {
+            "sufficient": "bool",
+            "conflicts": "string_list",
+            "limitations": "string_list"
+          }
+        },
+        {
+          "id": "context",
+          "component": "context.evidence_packer@2.0.1",
+          "config": {},
+          "inputs": {
+            "candidates": "fuse.candidates",
+            "question": "$query"
+          },
+          "outputs": {
+            "context": "context"
+          }
+        },
+        {
+          "id": "generate",
+          "component": "generation.local@2.0.1",
+          "config": {},
+          "inputs": {
+            "question": "$query",
+            "context": "context.context",
+            "sufficient": "verify.sufficient",
+            "candidates": "fuse.candidates"
+          },
+          "outputs": {
+            "answer": "answer",
+            "citations": "evidence_list",
+            "abstained": "bool"
+          }
+        },
+        {
+          "id": "claims",
+          "component": "verification.claims@1.0.0",
+          "config": {},
+          "inputs": {
+            "answer": "generate.answer",
+            "citations": "generate.citations",
+            "abstained": "generate.abstained"
+          },
+          "outputs": {
+            "verified_answer": "answer",
+            "citations": "evidence_list",
+            "abstained": "bool",
+            "claims": "claim_support"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "classify",
+          "target": "bm25",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "classify",
+          "target": "dense",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "classify",
+          "target": "structural",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "bm25",
+          "target": "fuse",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "dense",
+          "target": "fuse",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "structural",
+          "target": "fuse",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "fuse",
+          "target": "verify",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "fuse",
+          "target": "context",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "verify",
+          "target": "context",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "context",
+          "target": "generate",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "fuse",
+          "target": "generate",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "verify",
+          "target": "generate",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "generate",
+          "target": "claims",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "classify",
+          "target": "verify",
+          "kind": "data",
+          "condition": null
+        }
+      ],
+      "loops": [],
+      "outputs": {
+        "answer": "claims.verified_answer",
+        "citations": "claims.citations",
+        "abstained": "claims.abstained",
+        "claims": "claims.claims",
+        "context": "context.context"
+      }
+    }
+  },
+  "dataset_fingerprint": "9c4a4f78101a97d406f534d04581fe5c931b7ef65d4573d586911f7390fd62d1",
+  "config_fingerprint": "596cb8211104ce749f6df2966a486b6d438e228eade6ff82359ba0d99d3bb227",
+  "split": "development",
+  "status": "completed",
+  "case_results": [
+    {
+      "case_id": "dev-id",
+      "query_class": "exact_identifier",
+      "status": "completed",
+      "passed": false,
+      "run_id": "392cc275-dfe4-41f7-9732-ffd6d827ca99",
+      "ranked_evidence_ids": [
+        "dev-id",
+        "hold-no-rag",
+        "hold-id",
+        "reg-warning",
+        "tune-table",
+        "hold-temporal"
+      ],
+      "citation_ids": [],
+      "abstained": true,
+      "ranking": {
+        "schema_version": "1.0.0",
+        "k": 5,
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.2,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0,
+        "hard_negative_hits": 0,
+        "relevant_count": 1,
+        "retrieved_count": 5,
+        "unavailable_reason": null
+      },
+      "stage_ranking": {
+        "bm25": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 2,
+          "unavailable_reason": null
+        },
+        "dense": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 5,
+          "unavailable_reason": null
+        },
+        "structural": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 2,
+          "unavailable_reason": null
+        },
+        "fuse": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 5,
+          "unavailable_reason": null
+        }
+      },
+      "stage_latency_ms": {
+        "classify": 0,
+        "bm25": 0,
+        "dense": 529,
+        "structural": 0,
+        "fuse": 0,
+        "verify": 0,
+        "context": 0,
+        "generate": 2417,
+        "claims": 0
+      },
+      "latency_ms": 2953.025000002526,
+      "token_usage": {
+        "input_tokens": 876,
+        "output_tokens": 60,
+        "context_tokens": 374,
+        "retrieval_reasoning_tokens": 0
+      },
+      "claim_support": [
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        }
+      ],
+      "abstention_correct": false,
+      "expected_abstention": false
+    },
+    {
+      "case_id": "dev-semantic",
+      "query_class": "semantic",
+      "status": "completed",
+      "passed": false,
+      "run_id": "ec1f4af6-f229-455c-893d-c5b55736ab73",
+      "ranked_evidence_ids": [
+        "dev-semantic",
+        "reg-warning",
+        "hold-semantic",
+        "hold-no-rag",
+        "tune-phrase"
+      ],
+      "citation_ids": [],
+      "abstained": true,
+      "ranking": {
+        "schema_version": "1.0.0",
+        "k": 5,
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.2,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0,
+        "hard_negative_hits": 0,
+        "relevant_count": 1,
+        "retrieved_count": 5,
+        "unavailable_reason": null
+      },
+      "stage_ranking": {
+        "bm25": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 1,
+          "unavailable_reason": null
+        },
+        "dense": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 5,
+          "unavailable_reason": null
+        },
+        "structural": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 1,
+          "unavailable_reason": null
+        },
+        "fuse": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 5,
+          "unavailable_reason": null
+        }
+      },
+      "stage_latency_ms": {
+        "classify": 0,
+        "bm25": 1,
+        "dense": 96,
+        "structural": 0,
+        "fuse": 0,
+        "verify": 0,
+        "context": 0,
+        "generate": 372,
+        "claims": 0
+      },
+      "latency_ms": 476.0502909994102,
+      "token_usage": {
+        "input_tokens": 902,
+        "output_tokens": 10,
+        "context_tokens": 386,
+        "retrieval_reasoning_tokens": 0
+      },
+      "claim_support": [
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        }
+      ],
+      "abstention_correct": false,
+      "expected_abstention": false
+    },
+    {
+      "case_id": "dev-procedure",
+      "query_class": "procedure",
+      "status": "completed",
+      "passed": false,
+      "run_id": "4ee3da39-8b66-44d6-a5e1-ae2584659a78",
+      "ranked_evidence_ids": [
+        "dev-procedure",
+        "hold-temporal",
+        "hold-procedure",
+        "hold-comparison",
+        "hold-id"
+      ],
+      "citation_ids": [],
+      "abstained": true,
+      "ranking": {
+        "schema_version": "1.0.0",
+        "k": 5,
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.2,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0,
+        "hard_negative_hits": 0,
+        "relevant_count": 1,
+        "retrieved_count": 5,
+        "unavailable_reason": null
+      },
+      "stage_ranking": {
+        "bm25": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 2,
+          "unavailable_reason": null
+        },
+        "dense": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 5,
+          "unavailable_reason": null
+        },
+        "structural": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 2,
+          "unavailable_reason": null
+        },
+        "fuse": {
+          "schema_version": "1.0.0",
+          "k": 5,
+          "recall_at_k": 1.0,
+          "precision_at_k": 0.2,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "hard_negative_hits": 0,
+          "relevant_count": 1,
+          "retrieved_count": 5,
+          "unavailable_reason": null
+        }
+      },
+      "stage_latency_ms": {
+        "classify": 0,
+        "bm25": 1,
+        "dense": 89,
+        "structural": 0,
+        "fuse": 0,
+        "verify": 0,
+        "context": 0,
+        "generate": 531,
+        "claims": 0
+      },
+      "latency_ms": 624.6930420020362,
+      "token_usage": {
+        "input_tokens": 910,
+        "output_tokens": 15,
+        "context_tokens": 392,
+        "retrieval_reasoning_tokens": 0
+      },
+      "claim_support": [
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        },
+        {
+          "evidence_ids": [],
+          "support": "unsupported",
+          "confidence": 0.0,
+          "verifier": "verbatim-sentence@1.0.0",
+          "action": "abstain"
+        }
+      ],
+      "abstention_correct": false,
+      "expected_abstention": false
+    }
+  ],
+  "metrics": {
+    "cases": 3,
+    "completed_cases": 3,
+    "ranked_cases": 3,
+    "fixture_passes": 0,
+    "citation_precision": null,
+    "citation_coverage": null,
+    "unsupported_claim_rate": 1.0,
+    "peak_memory_bytes": 59686912,
+    "memory_measurement": "process-lifetime peak RSS; isolate each arm in a new process",
+    "abstention_correctness": {
+      "correct": 0,
+      "denominator": 3
+    },
+    "by_query_class": {
+      "exact_identifier": {
+        "cases": 1,
+        "fixture_passes": 0
+      },
+      "procedure": {
+        "cases": 1,
+        "fixture_passes": 0
+      },
+      "semantic": {
+        "cases": 1,
+        "fixture_passes": 0
+      }
+    },
+    "unsupported_claim_denominator": 17,
+    "claim_metric_scope": "attempted generated claims, including verification abstentions",
+    "recall_at_k": {
+      "mean": 1.0,
+      "denominator": 3
+    },
+    "precision_at_k": {
+      "mean": 0.20000000000000004,
+      "denominator": 3
+    },
+    "mrr": {
+      "mean": 1.0,
+      "denominator": 3
+    },
+    "ndcg_at_k": {
+      "mean": 1.0,
+      "denominator": 3
+    }
+  },
+  "failures": [
+    "dev-id: fixture expectations failed",
+    "dev-semantic: fixture expectations failed",
+    "dev-procedure: fixture expectations failed"
+  ],
+  "decision": "iterate",
+  "notes": "Local-real experiment, not promoted. Inspect class-level failures and resource limits; missing metrics remain null."
+}

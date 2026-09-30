@@ -20,41 +20,42 @@ This file combines the Markdown documentation under `docs/` for convenient readi
 14. `adr/013-versioned-local-real-retrieval.md`
 15. `adr/014-conservative-context-and-claim-verification.md`
 16. `adr/015-controlled-strategy-comparisons.md`
-17. `adr/template.md`
-18. `api/README.md`
-19. `architecture/README.md`
-20. `architecture/system.md`
-21. `data-engineer-guide/README.md`
-22. `definition-of-done/README.md`
-23. `design-principles/README.md`
-24. `developer-guide/README.md`
-25. `evaluation/README.md`
-26. `observability/README.md`
-27. `operations/README.md`
-28. `product/roadmap-and-specification.md`
-29. `product-ux/README.md`
-30. `product-ux/ai-native-workspace-guide.md`
-31. `reference/configuration.md`
-32. `research/README.md`
-33. `research/local-reranking.md`
-34. `research/local-retrieval-baseline.md`
-35. `research/qdrant-authorized-point-filter.md`
-36. `security/README.md`
-37. `testing/README.md`
-38. `user-guide/first-local-run.md`
-39. `v2/current-system-assessment.md`
-40. `v2/evaluation-plan.md`
-41. `v2/implementation-status.md`
-42. `v2/local-live-findings.md`
-43. `v2/local-real-profile.md`
-44. `v2/migration-plan.md`
-45. `v2/requirements.md`
-46. `v2/research-plan.md`
-47. `v2/runtime-contract.md`
-48. `v2/strategy-comparison.md`
-49. `v2/target-architecture.md`
-50. `v2/verification-contract.md`
-51. `validation/README.md`
+17. `adr/016-live-evaluation-and-citation-layout.md`
+18. `adr/template.md`
+19. `api/README.md`
+20. `architecture/README.md`
+21. `architecture/system.md`
+22. `data-engineer-guide/README.md`
+23. `definition-of-done/README.md`
+24. `design-principles/README.md`
+25. `developer-guide/README.md`
+26. `evaluation/README.md`
+27. `observability/README.md`
+28. `operations/README.md`
+29. `product/roadmap-and-specification.md`
+30. `product-ux/README.md`
+31. `product-ux/ai-native-workspace-guide.md`
+32. `reference/configuration.md`
+33. `research/README.md`
+34. `research/local-reranking.md`
+35. `research/local-retrieval-baseline.md`
+36. `research/qdrant-authorized-point-filter.md`
+37. `security/README.md`
+38. `testing/README.md`
+39. `user-guide/first-local-run.md`
+40. `v2/current-system-assessment.md`
+41. `v2/evaluation-plan.md`
+42. `v2/implementation-status.md`
+43. `v2/local-live-findings.md`
+44. `v2/local-real-profile.md`
+45. `v2/migration-plan.md`
+46. `v2/requirements.md`
+47. `v2/research-plan.md`
+48. `v2/runtime-contract.md`
+49. `v2/strategy-comparison.md`
+50. `v2/target-architecture.md`
+51. `v2/verification-contract.md`
+52. `validation/README.md`
 
 
 ---
@@ -445,6 +446,21 @@ Generate six versioned graph variants with explicit lane, ranking and decision d
 ## Consequences
 
 A model, its license and M3 envelope still need operator configuration and measured acceptance. Synthetic fixtures validate control flow but cannot justify a quality claim. Unknown policy constraints fail rather than disappear. The comparison runner is an engineering command, not a new API/job service. Advanced corrective/planner behavior remains blocked by the real A–F acceptance gate.
+
+
+---
+
+<!-- Source: adr/016-live-evaluation-and-citation-layout.md -->
+
+# ADR-016: Keep stage evidence on failure and version citation parsing
+
+Status: accepted for measurement and source-fidelity parsing; prompt candidate not promoted.
+
+Live generation failures exposed two measurement gaps: completed retrieval disappeared from experiment metrics, and generation settings were absent from configuration fingerprints. Capture each case's terminal manifest through a delegating trace-store wrapper. Persist completed rankings, stage timings and run ID even when a later node fails. Report ranked and completed denominators separately. Fingerprint runtime assets, embedding identity and indexes alongside the strategy and graph.
+
+The source-sentence verifier 1.0.1 accepts an identifier on the immediately following line. It still requires an exact complete normalized sentence from that identified source. Unknown citations, paraphrases and altered qualifiers fail; an orphan citation cannot support a claim. Version 1.0.0 remains registered for old graphs.
+
+A prompt candidate at generation/context 2.0.1 was evaluated after observing a literal placeholder citation. The model then emitted next-line citations, and parser correction alone did not produce consistent gains. Keep 2.0.0 as the default prompt. Retain 2.0.1 as an explicit experimental component and preserve every failed experiment. Do not promote a strategy from these small synthetic cases.
 
 
 ---
@@ -1784,6 +1800,11 @@ No model is selected, downloaded or redistributed. License, M3 memory use, CPU/M
 Compare D and E on the same frozen data before promotion. F applies an explicit experimental lexical-only routing rule for identifier/phrase queries; the default graph retains all lanes. Neither optimization is accepted on source claims or synthetic tests alone.
 
 
+## Provisioned development candidate — 2026-09-30
+
+The [Sentence Transformers model card](https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2) describes an English MS MARCO passage reranker with 22.7M parameters and Apache-2.0 licensing. Upstream benchmark figures are not M3 measurements. We provisioned only safetensors, tokenizer/configuration and the model card from revision `233902d25c440f23af6f7d6e94d2946bac0bee0a`. Directory fingerprint: `626066419752140b03cbdce61a92f31405be0ff8c2592261cf7fbbab2697fe44`. Assets live under ignored `.local/models/ms-marco-MiniLM-L6-v2`; runtime loads offline on CPU with remote code disabled. This candidate supplies arms E/F; quality acceptance depends on repository experiments. No score threshold is interpreted as a probability of truth.
+
+
 ---
 
 <!-- Source: research/local-retrieval-baseline.md -->
@@ -2107,14 +2128,14 @@ Updated 2026-09-30. Specifications cover the full scope; runtime delivery is inc
 | Scope/persistence | Mandatory Qdrant authorized-ID filter, content/scope-sensitive identities, no-overwrite traces and safe errors | 57 tests; provider request doubles, no live database |
 | Retrieval adapters | Persistent BM25, exact lane, pinned Ollama embeddings/generation, Qdrant composition, config schemas and candidate trace metadata | 70 tests; no live semantic-quality claim |
 | Structural/context/verification | Parent links/traversal, twelve query classes, whole-block context/quota decisions, explicit conflicts, complete quoted-sentence citation verification | 89 tests; full graph with provider doubles |
-| Strategy experiment runtime | Local pinned reranker, explicit A–F graphs, experimental F routing, per-process comparison command, policy narrowing, stage metrics and 22 synthetic cases | 105 tests; real comparison blocked by model/service prerequisites |
+| Strategy experiment runtime | Local pinned reranker, explicit A–F graphs, experimental F routing, per-process comparison command, policy narrowing, stage metrics and 22 synthetic cases | 105 tests at implementation; subsequent real A–F results below |
 
 ## Current limits and next steps
 
 - Native Ollama and Docker Desktop are now running on the 18 GiB host. Compose configuration and Qdrant/PostgreSQL startup passed. Real development runs expose generation timeouts and rejected claims; see [live findings](v2/local-live-findings.md). Full Compose flow, PostgreSQL restart durability, representative quality and resource acceptance remain unverified. Ruff remains unavailable.
 - The local-real profile is experimental, using the checked-in corpus. Managed ingestion/publication, immutable source storage and corpus/index releases remain pending.
 - Claim verification checks complete quoted sentences only; general semantic entailment, inferred contradictions and calibrated evidence sufficiency remain pending.
-- Query classification retains every lane by default. Reranking and F routing are executable experimental options; no real A–F comparison or promotion has passed.
+- Query classification retains every lane by default. Real A–F experiments now execute with pinned Nomic, Qwen 2B and an offline CPU cross-encoder. All arms passed only 5/11 synthetic held-out expectations; no promotion is justified. Source-fidelity parsing now accepts adjacent-line citations, and failed runs retain completed retrieval metrics. See experiments/v2-07-generation.
 - Representative domain held-out/adversarial data, calibrated per-class metrics, token telemetry, full experiment promotion/rollback and Studio inspection remain pending.
 - Provider cancellation, advanced error-edge behavior, tools/corrective retrieval, experience memory and learning are not enabled. They remain gated by reproducible A–F evidence.
 
@@ -2144,6 +2165,14 @@ Installed Qwen 0.8B was selected only for a local development probe. The server 
 | Arm D, same settings plus explicit 8192 context | 3/3 | 1/3 | 1.095–3.314 s; expected evidence ranked first for all three; two answers abstained after failed verification |
 
 Records are retained under `experiments/v2-06-live/`. These are not controlled A-versus-D quality comparisons: configuration and warm state changed. The last two runs diagnose runtime behavior; the small development set cannot establish strategy improvement. Peak RSS describes the Python process only, excluding Ollama and Docker. No strategy promotion is justified. Next: inspect generation failures, complete equal-configuration A–F comparisons, measure the full service resource envelope and run held-out/adversarial cases.
+
+## Six-arm follow-up
+
+A pinned, offline CPU MiniLM reranker enabled real E/F runs. The installed Qwen 2B generator passed 2/3 initial development cases in arms B–F. A versioned prompt clarification regressed results; it remains experimental. Citation verifier 1.0.1 accepts an immediately adjacent citation line while retaining full source-sentence matching. The default prompt remains 2.0.0.
+
+With the retained default prompt and revised parser, all six arms completed the 11 synthetic held-out cases; each passed only 5/11 expectations. Recall@5 was 1.0 for the six cases with relevant evidence labels, while generated claims failed verification. The five expected abstentions passed. The experiment does not justify reranking, routing or advanced-retrieval promotion. Preserve the held-out set; do not optimize against its answers. A real domain corpus is required for representative acceptance.
+
+The native PostgreSQL integration check could not import the declared `psycopg` dependency. A project-local installation attempt encountered a malformed proxy; a direct retry failed DNS. PostgreSQL container startup alone is not persistence acceptance. These failures are recorded in the loop rather than waived.
 
 
 ---
@@ -2537,6 +2566,10 @@ Multiple eligible revisions of one document are unresolved unless request policy
 The generator requests one complete source sentence and citation ID per line. `verbatim-sentence@1.0.0` checks complete normalized sentence equality and the citation's existence in the selected evidence. Changed warnings, fragments, paraphrases and invented IDs fail closed. Empty output and explicit ABSTAIN abstain. Any failed claim clears delivered citations and returns a verification abstention; claim records remain inspectable in the response.
 
 This checks quoted source fidelity, not source truth, relevance completeness, or unrestricted semantic entailment. Do not market it as calibrated general claim support. A later verifier must have separate identity, fixtures and measured acceptance.
+
+## Citation layout revision
+
+`verification.claims@1.0.1` additionally accepts a citation immediately following its claim on the next line. This changes layout parsing only: the full sentence and actual source ID must still match. The preceding `1.0.0` verifier remains available for replay. Experimental generation/context `2.0.1` clarified citation instructions but did not establish a consistent measured gain; default graphs retain the `2.0.0` prompt. See ADR-016 and `experiments/v2-07-generation`.
 
 
 ---
