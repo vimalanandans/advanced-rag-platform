@@ -49,8 +49,8 @@ class QdrantVectorIndex:
 
     def health(self) -> bool:
         try:
-            return self._request("GET", "/healthz").get("title") == "qdrant - vector search engine"
-        except OSError:
+            return self._request("GET", "/").get("title") == "qdrant - vector search engine"
+        except (OSError, ValueError, TypeError, AttributeError):
             return False
 
     def _request(self, method: str, path: str, payload: dict | None = None) -> dict:
@@ -63,10 +63,19 @@ class QdrantVectorIndex:
 class OllamaModelProvider:
     """Optional local generation adapter. The deterministic generator remains the test default."""
 
-    def __init__(self, url: str = "http://localhost:11434", model: str = "llama3.2", allow_remote: bool = False, revision: str | None = None) -> None:
+    def __init__(self, url: str = "http://localhost:11434", model: str = "llama3.2", allow_remote: bool = False, revision: str | None = None,
+                 think: bool | None = None, temperature: float | None = None, context_window: int | None = None) -> None:
         _validate_provider_url(url, allow_remote, {"ollama"})
         self.url, self.model = url.rstrip("/"), model
         self.revision = revision
+        if temperature is not None and (not isinstance(temperature, (int, float)) or not 0 <= temperature <= 2):
+            raise ValueError("temperature must be between zero and two")
+        if think is not None and not isinstance(think, bool):
+            raise ValueError("think must be a boolean or unspecified")
+        self.think, self.temperature = think, temperature
+        if context_window is not None and (type(context_window) is not int or context_window <= 0):
+            raise ValueError("context window must be a positive integer")
+        self.context_window = context_window
 
     def _assert_revision(self, timeout: float) -> None:
         if self.revision is not None:
@@ -76,10 +85,21 @@ class OllamaModelProvider:
                 raise ValueError("generation model is unavailable or its digest changed")
 
     def generate(self, prompt: str, *, timeout: float = 90, max_tokens: int | None = None) -> str:
+        if self.context_window is not None and (max_tokens is None or len(prompt.encode()) + max_tokens > self.context_window):
+            raise ValueError("prompt and output reservation exceed explicit context window")
         self._assert_revision(timeout)
         payload = {"model": self.model, "prompt": prompt, "stream": False}
+        if self.think is not None:
+            payload["think"] = self.think
+        options = {}
         if max_tokens is not None:
-            payload["options"] = {"num_predict": max_tokens}
+            options["num_predict"] = max_tokens
+        if self.temperature is not None:
+            options["temperature"] = self.temperature
+        if self.context_window is not None:
+            options["num_ctx"] = self.context_window
+        if options:
+            payload["options"] = options
         request = Request(f"{self.url}/api/generate", data=json.dumps(payload).encode(), method="POST", headers={"Content-Type": "application/json"})
         with urlopen(request, timeout=timeout) as response:  # nosec B310: explicit local/provider URL
             answer = json.loads(response.read())["response"]

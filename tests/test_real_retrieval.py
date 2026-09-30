@@ -120,9 +120,57 @@ def test_local_real_graph_compiles_and_rejects_invalid_component_config(tmp_path
         "RAG_WORKBENCH_EMBEDDING_MODEL": "test:latest", "RAG_WORKBENCH_EMBEDDING_REVISION": "digest",
         "RAG_WORKBENCH_EMBEDDING_DIMENSIONS": "2", "RAG_WORKBENCH_OLLAMA_MODEL": "generator:latest",
         "RAG_WORKBENCH_STORAGE": str(tmp_path), "RAG_WORKBENCH_GENERATION_REVISION": "generation-digest",
+        "RAG_WORKBENCH_EMBEDDING_QUERY_PREFIX": "search_query: ",
+        "RAG_WORKBENCH_EMBEDDING_DOCUMENT_PREFIX": "search_document: ",
     })
     pipeline = pipeline_from_yaml((Path(__file__).parent.parent / "configs/pipelines/local-real.yaml").read_text())
+    assert runtime.embedding_identity["query_prefix"] == "search_query: "
+    assert runtime.embedding_identity["document_prefix"] == "search_document: "
     assert runtime.compile(pipeline).pipeline.graph.schema_version == "2.0.0"
     next(node for node in pipeline.graph.nodes if node.id == "bm25").config["limit"] = -1
     with pytest.raises(GraphValidationError, match="configuration"):
         runtime.compile(pipeline)
+
+
+def test_qdrant_health_uses_json_identity_endpoint():
+    adapter = QdrantVectorIndex()
+    calls = []
+    adapter._request = lambda method, path: calls.append((method, path)) or {"title": "qdrant - vector search engine"}
+    assert adapter.health()
+    assert calls == [("GET", "/")]
+    adapter._request = lambda *_: {"title": "other service"}
+    assert not adapter.health()
+
+
+def test_embedding_prefix_is_applied_by_purpose():
+    identity = EmbeddingIdentity(provider="ollama", model_id="test:latest", revision="digest", dimensions=2,
+                                 query_prefix="search_query: ", document_prefix="search_document: ")
+    adapter = OllamaEmbeddingProvider(identity)
+    calls = []
+    def request(path, payload=None):
+        if path == "/api/tags":
+            return {"models": [{"name": "test:latest", "digest": "digest"}]}
+        calls.append(payload["input"])
+        return {"embeddings": [[1, 0]]}
+    adapter._request = request
+    adapter.encode(["automobile"], purpose="query")
+    adapter.encode(["vehicle"], purpose="document")
+    assert calls == [["search_query: automobile"], ["search_document: vehicle"]]
+
+
+def test_generation_options_are_explicit_and_context_overflow_rejected(monkeypatch):
+    import io
+    import json
+    from rag_workbench import providers
+    calls = []
+    def request(req, **kwargs):
+        calls.append(json.loads(req.data))
+        return io.BytesIO(b'{"response": "verified"}')
+    monkeypatch.setattr(providers, "urlopen", request)
+    adapter = providers.OllamaModelProvider(think=False, temperature=0, context_window=512)
+    assert adapter.generate("small prompt", max_tokens=128) == "verified"
+    assert calls[0]["think"] is False
+    assert calls[0]["options"] == {"num_predict": 128, "temperature": 0, "num_ctx": 512}
+    with pytest.raises(ValueError, match="reservation"):
+        adapter.generate("x" * 500, max_tokens=128)
+    assert len(calls) == 1

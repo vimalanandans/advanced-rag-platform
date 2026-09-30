@@ -16,7 +16,7 @@ Updated 2026-09-30. Specifications cover the full scope; runtime delivery is inc
 
 ## Current limits and next steps
 
-- Ollama and Qdrant readiness probes return connection refused; Docker and Ruff are unavailable. Compose startup, PostgreSQL durability/concurrency and M3 memory/latency acceptance remain unverified.
+- Native Ollama and Docker Desktop are now running on the 18 GiB host. Compose configuration and Qdrant/PostgreSQL startup passed. Real development runs expose generation timeouts and rejected claims; see [live findings](local-live-findings.md). Full Compose flow, PostgreSQL restart durability, representative quality and resource acceptance remain unverified. Ruff remains unavailable.
 - The local-real profile is experimental, using the checked-in corpus. Managed ingestion/publication, immutable source storage and corpus/index releases remain pending.
 - Claim verification checks complete quoted sentences only; general semantic entailment, inferred contradictions and calibrated evidence sufficiency remain pending.
 - Query classification retains every lane by default. Reranking and F routing are executable experimental options; no real A–F comparison or promotion has passed.

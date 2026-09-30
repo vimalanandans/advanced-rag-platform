@@ -27,15 +27,20 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=ROOT / ".local/strategy-comparison")
     parser.add_argument("--split", choices=["development", "tuning", "held_out", "adversarial", "regression"], default="held_out")
     parser.add_argument("--requested-at", required=True, help="Pinned ISO-8601 timestamp with timezone")
+    parser.add_argument("--max-latency-ms", type=int, help="Explicit experiment deadline override, recorded in graph fingerprint")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--arm", choices=list(ARMS))
     group.add_argument("--all", action="store_true")
     args = parser.parse_args()
+    if args.max_latency_ms is not None and args.max_latency_ms <= 0:
+        parser.error("--max-latency-ms must be positive")
     if args.all:
         outcomes = {}
         for arm in ARMS:
             command = [sys.executable, str(Path(__file__).resolve()), "--dataset", str(args.dataset), "--corpus", str(args.corpus),
                        "--output", str(args.output), "--split", args.split, "--requested-at", args.requested_at, "--arm", arm]
+            if args.max_latency_ms is not None:
+                command += ["--max-latency-ms", str(args.max_latency_ms)]
             outcomes[arm] = subprocess.run(command, check=False).returncode
         args.output.mkdir(parents=True, exist_ok=True)
         target = args.output / f"comparison-{uuid.uuid4()}.json"
@@ -53,7 +58,10 @@ def main() -> int:
         corpus = [Evidence.model_validate(item) for item in json.loads(args.corpus.read_text())]
         runtime = local_real_runtime(trace_store=JsonTraceStore(args.output / "traces"))
         runtime.set_evidence(corpus)
-        plan = runtime.compile(experiment_pipeline(args.arm))
+        pipeline = experiment_pipeline(args.arm)
+        if args.max_latency_ms is not None:
+            pipeline.budgets.max_latency_ms = args.max_latency_ms
+        plan = runtime.compile(pipeline)
         models = [runtime.model_version]
         indexes = []
         if "dense" in ARMS[args.arm]:

@@ -45,15 +45,16 @@ This file combines the Markdown documentation under `docs/` for convenient readi
 39. `v2/current-system-assessment.md`
 40. `v2/evaluation-plan.md`
 41. `v2/implementation-status.md`
-42. `v2/local-real-profile.md`
-43. `v2/migration-plan.md`
-44. `v2/requirements.md`
-45. `v2/research-plan.md`
-46. `v2/runtime-contract.md`
-47. `v2/strategy-comparison.md`
-48. `v2/target-architecture.md`
-49. `v2/verification-contract.md`
-50. `validation/README.md`
+42. `v2/local-live-findings.md`
+43. `v2/local-real-profile.md`
+44. `v2/migration-plan.md`
+45. `v2/requirements.md`
+46. `v2/research-plan.md`
+47. `v2/runtime-contract.md`
+48. `v2/strategy-comparison.md`
+49. `v2/target-architecture.md`
+50. `v2/verification-contract.md`
+51. `validation/README.md`
 
 
 ---
@@ -2110,7 +2111,7 @@ Updated 2026-09-30. Specifications cover the full scope; runtime delivery is inc
 
 ## Current limits and next steps
 
-- Ollama and Qdrant readiness probes return connection refused; Docker and Ruff are unavailable. Compose startup, PostgreSQL durability/concurrency and M3 memory/latency acceptance remain unverified.
+- Native Ollama and Docker Desktop are now running on the 18 GiB host. Compose configuration and Qdrant/PostgreSQL startup passed. Real development runs expose generation timeouts and rejected claims; see [live findings](v2/local-live-findings.md). Full Compose flow, PostgreSQL restart durability, representative quality and resource acceptance remain unverified. Ruff remains unavailable.
 - The local-real profile is experimental, using the checked-in corpus. Managed ingestion/publication, immutable source storage and corpus/index releases remain pending.
 - Claim verification checks complete quoted sentences only; general semantic entailment, inferred contradictions and calibrated evidence sufficiency remain pending.
 - Query classification retains every lane by default. Reranking and F routing are executable experimental options; no real A–F comparison or promotion has passed.
@@ -2118,6 +2119,31 @@ Updated 2026-09-30. Specifications cover the full scope; runtime delivery is inc
 - Provider cancellation, advanced error-edge behavior, tools/corrective retrieval, experience memory and learning are not enabled. They remain gated by reproducible A–F evidence.
 
 See [runtime contracts](v2/runtime-contract.md), [local-real profile](v2/local-real-profile.md), [verification contract](v2/verification-contract.md), and [migration plan](v2/migration-plan.md). Each milestone's evidence is in `experiments/`; none of the adapter tests establish real-model quality or production readiness.
+
+
+---
+
+<!-- Source: v2/local-live-findings.md -->
+
+# Local live verification — 2026-09-30
+
+This is development evidence, not representative quality acceptance. Native Ollama 0.20.0 and Docker Desktop engine 29.8.1 were installed outside the initially probed PATH or stopped. Starting them resolved the earlier connection-refused prerequisite. The host reports 18 GiB RAM. Compose configuration passed; Qdrant 1.11.3 and PostgreSQL 16 containers started. Full application Compose startup, Studio and database restart durability remain separate checks.
+
+## Observations and changes
+
+Qdrant `/healthz` returns plain text. The JSON adapter now probes `/` and checks the service title. Local-real composition now exposes embedding query/document prefixes; they already participate in immutable vector-point identity. The installed Nomic model returns 768 dimensions. Its [model card](https://huggingface.co/nomic-ai/nomic-embed-text-v1.5) requires distinct search prefixes and lists Apache-2.0 licensing. This experiment uses its native dimensions without dimensional reduction.
+
+Generation exposes explicit thinking, temperature and context-window settings, retained in asset metadata. Unspecified settings preserve prior behavior. The adapter rejects a prompt whose UTF-8 byte upper bound plus output reservation exceeds an explicitly selected context window, preventing silent prompt truncation. [Ollama's generation API](https://docs.ollama.com/api/generate) documents thinking and runtime options. No reasoning text is logged.
+
+Installed Qwen 0.8B was selected only for a local development probe. The server initially allocated 131,072 context tokens on GPU. No model download was required. Model digests, graph snapshots and embedding settings are in each experiment record.
+
+| Experiment | Completed | Expected cases passed | Observation |
+| --- | --- | --- | --- |
+| Arm A, defaults, 15 s deadline | 0/3 | 0/3 | All generation calls timed out |
+| Arm D, thinking disabled, temperature 0, 60 s | 2/3 | 0/3 | One timeout; generated claims rejected |
+| Arm D, same settings plus explicit 8192 context | 3/3 | 1/3 | 1.095–3.314 s; expected evidence ranked first for all three; two answers abstained after failed verification |
+
+Records are retained under `experiments/v2-06-live/`. These are not controlled A-versus-D quality comparisons: configuration and warm state changed. The last two runs diagnose runtime behavior; the small development set cannot establish strategy improvement. Peak RSS describes the Python process only, excluding Ollama and Docker. No strategy promotion is justified. Next: inspect generation failures, complete equal-configuration A–F comparisons, measure the full service resource envelope and run held-out/adversarial cases.
 
 
 ---
@@ -2135,8 +2161,14 @@ export RAG_WORKBENCH_PROFILE=local-real
 export RAG_WORKBENCH_STORAGE="$PWD/.local"
 export RAG_WORKBENCH_EMBEDDING_MODEL='<installed-model:tag>'
 export RAG_WORKBENCH_EMBEDDING_REVISION='<installed-model-digest>'
+# Optional model-specific task prefixes are part of embedding identity:
+export RAG_WORKBENCH_EMBEDDING_QUERY_PREFIX='search_query: '
+export RAG_WORKBENCH_EMBEDDING_DOCUMENT_PREFIX='search_document: '
 export RAG_WORKBENCH_EMBEDDING_DIMENSIONS='<model-dimension>'
 export RAG_WORKBENCH_OLLAMA_MODEL='<installed-generator:tag>'
+export RAG_WORKBENCH_GENERATION_THINK=false
+export RAG_WORKBENCH_GENERATION_TEMPERATURE=0
+export RAG_WORKBENCH_GENERATION_CONTEXT_WINDOW=8192
 export RAG_WORKBENCH_GENERATION_REVISION='<installed-generator-digest>'
 export RAG_WORKBENCH_OLLAMA_URL=http://localhost:11434
 export RAG_WORKBENCH_QDRANT_URL=http://localhost:6333
@@ -2150,7 +2182,7 @@ The embedding adapter bounds batch count/input bytes and checks response cardina
 
 Manifests now retain embedding identity, content/policy corpus fingerprint and candidate IDs/ranks/scores without raw evidence. BM25 token statistics persist at `<storage>/indexes/bm25-v2.sqlite`. Versioned component schemas are validated at compile time. The old deterministic profile and fingerprint remain available.
 
-Verification covers deterministic scoring, database reopen, exact boundaries, scope isolation and provider response contracts. No local model or Qdrant listener was available during implementation, so live and M3 resource acceptance remain outstanding.
+Verification covers deterministic scoring, database reopen, exact boundaries, scope isolation and provider response contracts. Initial probes found stopped services. Subsequent live checks started native Ollama and Docker Desktop; Nomic produced 768-dimensional embeddings and Qdrant 1.11.3 answered requests. See [live findings](v2/local-live-findings.md). Full operational acceptance remains outstanding.
 
 
 ---
