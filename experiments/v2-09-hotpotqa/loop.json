@@ -1,0 +1,49 @@
+{
+  "task_id": "v2-09-hotpotqa-source-and-baseline",
+  "problem": "Synthetic cases could verify mechanics but not provide sourced multi-hop retrieval evidence.",
+  "query_or_content_class": "48 hard comparison and bridge questions, 476 question-scoped passages",
+  "hypothesis": "A pinned HotpotQA validation subset yields reproducible licensed retrieval labels on the local M3.",
+  "baseline": {
+    "previous_source": "22 fictional fixture cases; no representative benchmark"
+  },
+  "experiment": {
+    "source": "HotpotQA official Hugging Face mirror distractor validation",
+    "revision": "1908d6afbbead072334abe2965f91bd2709910ab",
+    "sha256": "c20b638ca82b21d04fe12e14ff417ad05153d4d215a65de54497fca4e972f7c6",
+    "selection": "lowest SHA-256(question ID) per type; all validation rows are hard; no answer-based selection"
+  },
+  "files_changed": [
+    "scripts/prepare_hotpotqa.py",
+    "scripts/evaluate_hotpotqa_retrieval.py",
+    "tests/test_hotpotqa_preparation.py",
+    "docs/research/hotpotqa-benchmark.md",
+    "pyproject.toml"
+  ],
+  "commands_run": [
+    "python3 scripts/prepare_hotpotqa.py",
+    "python3 scripts/evaluate_hotpotqa_retrieval.py"
+  ],
+  "tests_run": [
+    "122 pytest tests passed",
+    "Documentation validation passed for seven routes"
+  ],
+  "metrics_before": {
+    "sourced_cases": 0
+  },
+  "metrics_after": {
+    "sourced_cases": 48,
+    "passages": 476,
+    "bm25_recall_at_5": 0.8125,
+    "bm25_mrr": 0.8791666666666668,
+    "all_supporting_paragraphs_in_top_5": 31
+  },
+  "failures": [
+    "Original HotpotQA host timed out during TLS handshake; pinned official mirror succeeded."
+  ],
+  "root_causes": [
+    "Original dataset host did not complete TLS; not a schema or license issue."
+  ],
+  "regressions": [],
+  "decision": "accept",
+  "notes": "Accept only the pinned corpus acquisition and retrieval-only baseline. Validation data are locked held-out; no strategy or answer-quality promotion. Original and transformed licensed data remain Git ignored. Full A-F local run follows separately."
+}
