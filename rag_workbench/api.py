@@ -16,7 +16,7 @@ app = FastAPI(title="RAG Engineering Workbench", version="0.1.0")
 allowed_origins = [origin.strip() for origin in os.environ.get("RAG_WORKBENCH_CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if origin.strip()]
 app.add_middleware(CORSMiddleware, allow_origins=allowed_origins, allow_credentials=False, allow_methods=["GET", "POST", "OPTIONS"], allow_headers=["Content-Type", "X-Tenant-Id", "X-User-Id", "X-Local-Admin-Token"])
 runtime = demo_runtime(trace_store=trace_store_from_environment())
-PIPELINE_PATH = Path(__file__).parent.parent / "configs" / "pipelines" / "baseline.yaml"
+PIPELINE_PATH = Path(__file__).parent.parent / "configs" / "pipelines" / ("local-real.yaml" if os.environ.get("RAG_WORKBENCH_PROFILE") == "local-real" else "baseline.yaml")
 
 
 class RunRequest(BaseModel):

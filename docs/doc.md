@@ -17,35 +17,38 @@ This file combines the Markdown documentation under `docs/` for convenient readi
 11. `adr/010-v2-incremental-evidence-platform.md`
 12. `adr/011-explicit-runtime-terminal-and-loop-outcomes.md`
 13. `adr/012-scoped-vector-search-and-immutable-traces.md`
-14. `adr/template.md`
-15. `api/README.md`
-16. `architecture/README.md`
-17. `architecture/system.md`
-18. `data-engineer-guide/README.md`
-19. `definition-of-done/README.md`
-20. `design-principles/README.md`
-21. `developer-guide/README.md`
-22. `evaluation/README.md`
-23. `observability/README.md`
-24. `operations/README.md`
-25. `product/roadmap-and-specification.md`
-26. `product-ux/README.md`
-27. `product-ux/ai-native-workspace-guide.md`
-28. `reference/configuration.md`
-29. `research/README.md`
-30. `research/qdrant-authorized-point-filter.md`
-31. `security/README.md`
-32. `testing/README.md`
-33. `user-guide/first-local-run.md`
-34. `v2/current-system-assessment.md`
-35. `v2/evaluation-plan.md`
-36. `v2/implementation-status.md`
-37. `v2/migration-plan.md`
-38. `v2/requirements.md`
-39. `v2/research-plan.md`
-40. `v2/runtime-contract.md`
-41. `v2/target-architecture.md`
-42. `validation/README.md`
+14. `adr/013-versioned-local-real-retrieval.md`
+15. `adr/template.md`
+16. `api/README.md`
+17. `architecture/README.md`
+18. `architecture/system.md`
+19. `data-engineer-guide/README.md`
+20. `definition-of-done/README.md`
+21. `design-principles/README.md`
+22. `developer-guide/README.md`
+23. `evaluation/README.md`
+24. `observability/README.md`
+25. `operations/README.md`
+26. `product/roadmap-and-specification.md`
+27. `product-ux/README.md`
+28. `product-ux/ai-native-workspace-guide.md`
+29. `reference/configuration.md`
+30. `research/README.md`
+31. `research/local-retrieval-baseline.md`
+32. `research/qdrant-authorized-point-filter.md`
+33. `security/README.md`
+34. `testing/README.md`
+35. `user-guide/first-local-run.md`
+36. `v2/current-system-assessment.md`
+37. `v2/evaluation-plan.md`
+38. `v2/implementation-status.md`
+39. `v2/local-real-profile.md`
+40. `v2/migration-plan.md`
+41. `v2/requirements.md`
+42. `v2/research-plan.md`
+43. `v2/runtime-contract.md`
+44. `v2/target-architecture.md`
+45. `validation/README.md`
 
 
 ---
@@ -365,6 +368,29 @@ Make terminal stores idempotent for identical writes and reject conflicting writ
 ## Consequences
 
 Custom vector adapters must implement the new required scope parameter; an adapter that ignores it is invalid. A provider returning an unexpected point fails rather than silently dropping it. Large authorized ID sets need measured scaling work. Existing traces remain readable; no destructive schema migration occurs. Live database concurrency and provider operation require separate acceptance. Raw errors are available to callers for debugging but never copied into run manifests.
+
+
+---
+
+<!-- Source: adr/013-versioned-local-real-retrieval.md -->
+
+# ADR-013: Versioned local-real retrieval composition
+
+## Status
+
+Accepted for experimental implementation; local-real operational and quality acceptance pending.
+
+## Context
+
+Hash vectors and simplified lexical scoring are useful fixtures but cannot establish semantic retrieval quality. A persistent lexical baseline and explicit embedding identity are prerequisites for A–F comparisons.
+
+## Decision
+
+Keep v1 fixture components. Add persistent `retrieval.bm25@2.0.0` and `retrieval.exact@1.0.0`; adapt the neutral vector retriever to an explicit embedding provider. The local-real profile requires model/digest/dimension settings and selects a graph-schema-2 pipeline. SQLite caches immutable term statistics and scoring uses only permitted documents. Ollama serves pinned, bounded batches with no truncation or hash fallback. Compile-time JSON Schema validation enforces published component configuration.
+
+## Consequences
+
+API profile selection is explicit, but the local-real graph remains experimental until hierarchy, verification, routing and experiments are accepted. No model license/default is assumed. Existing indexes remain intact; incompatible dimensions require a new collection. Candidate decisions and corpus/model identity are traceable. Live provider integration and M3 resource validation are outstanding; unit doubles do not demonstrate semantic recall.
 
 
 ---
@@ -1668,6 +1694,15 @@ docker compose up --build
 ```
 
 
+## Experimental V2 profile
+
+`RAG_WORKBENCH_PROFILE` selects `deterministic` (default) or `local-real`. Local-real additionally requires
+`RAG_WORKBENCH_EMBEDDING_MODEL`, `RAG_WORKBENCH_EMBEDDING_REVISION`, `RAG_WORKBENCH_EMBEDDING_DIMENSIONS`,
+`RAG_WORKBENCH_OLLAMA_MODEL` and `RAG_WORKBENCH_GENERATION_REVISION`. Revisions are installed model digests.
+The profile uses the existing local URLs/storage settings and defaults its Qdrant collection to `rag_evidence_v2`.
+See [local-real instructions and limitations](v2/local-real-profile.md). These settings do not prove provider readiness.
+
+
 ---
 
 <!-- Source: research/README.md -->
@@ -1675,6 +1710,25 @@ docker compose up --build
 # Research records
 
 Follow the [V2 research plan](v2/research-plan.md). Add a dated record per technique before implementation. A record must identify primary sources, their limitations, license, hardware assumptions, contract mapping and a reproducible experiment. This directory currently contains the protocol only; no literature or model benchmark is represented as completed.
+
+
+---
+
+<!-- Source: research/local-retrieval-baseline.md -->
+
+# Persistent lexical and local embedding baseline
+
+Reviewed 2026-09-30. Primary sources: [Stanford IR text, Okapi BM25](https://nlp.stanford.edu/IR-book/html/htmledition/okapi-bm25-a-non-binary-model-1.html), [Ollama API source](https://github.com/ollama/ollama/blob/main/docs/api.md), and [Ollama embedding capability](https://github.com/ollama/ollama/blob/main/docs/capabilities/embeddings.mdx).
+
+The new lexical component uses term-frequency saturation and length normalization, with positive smoothed IDF and configurable k1/b. SQLite persists immutable token statistics. Scores derive from the authorized snapshot, so private documents do not affect document frequency or top-k. The old simplified lexical component remains version 1 for regression compatibility; the new component is `retrieval.bm25@2.0.0`.
+
+Ollama supplies batched local embeddings through `/api/embed`. The adapter rejects truncation and checks a configured model digest before and after each batch. Dimension, normalization and query/document prefixes are explicit. No model is downloaded or chosen implicitly. Unit doubles verify contract behavior, not semantic quality.
+
+Dataset: current repository fixtures and focused synthetic authorization/identifier/length cases. Metrics: known BM25 score calculation, deterministic ranking, exact-boundary matches, scope stability, persistent restart and malformed provider rejection. No held-out quality improvement is claimed. SQLite/query scope scanning and digest checks add costs that must be measured on M3; large corpora need an indexed scope/statistics design rather than assuming this reference path scales.
+
+License: no new model or dataset is distributed. Model licensing and M3 memory/latency feasibility must be recorded before choosing a supported default. `jsonschema` is added for component configuration validation; it is separate from model selection. Query/document embedding differences stay behind the neutral identity contract. A dimension/model change creates a new versioned collection or compatible isolated point identities; an incompatible existing Qdrant collection is rejected.
+
+Local readiness probes on 2026-09-30 found no listener at Ollama 11434 or Qdrant 6333. Docker is unavailable in this execution environment. Live generation, embedding quality and resource measurements remain blocked.
 
 
 ---
@@ -2007,6 +2061,44 @@ Implemented explicit graph-schema-2 terminal bindings, enforced loop fallback, l
 ## Scope and persistence milestone (2026-09-30)
 
 Implemented mandatory authorized point-ID filtering inside vector search, content/scope-sensitive point identity, empty-scope no-op, fail-closed unexpected results, immutable/idempotent trace writes, JSON UUID path checks and safe error traces. Verification: 57 tests passed. Qdrant request-contract and in-memory shared-index tests pass; live Qdrant/PostgreSQL checks remain unverified. See ADR-012 and the [filter research record](research/qdrant-authorized-point-filter.md).
+
+
+## Retrieval adapter milestone (2026-09-30)
+
+Implemented persistent BM25, exact identifiers/phrases, neutral embedding identity, digest-pinned Ollama batches, embedding-backed Qdrant retrieval, collection-dimension validation, experimental local-real graph/API composition, component config validation and candidate/corpus/embedding trace metadata. All 70 tests pass; local Ollama and Qdrant probes return connection refused. Real semantic quality, model selection, hierarchy, claim checks and A–F acceptance remain outstanding. See [profile](v2/local-real-profile.md).
+
+
+---
+
+<!-- Source: v2/local-real-profile.md -->
+
+# Experimental local-real profile
+
+Implemented as a composition path, not yet operationally accepted. It uses persistent SQLite BM25, an exact lane, digest-pinned Ollama embeddings, filtered Qdrant search and local generation. The structural lane, classifier, context gate and generation/claim behavior are still being upgraded; this is not the complete first V2 milestone.
+
+Set explicit model identities from the installed Ollama service; no downloads or model defaults are selected:
+
+```bash
+export RAG_WORKBENCH_PROFILE=local-real
+export RAG_WORKBENCH_STORAGE="$PWD/.local"
+export RAG_WORKBENCH_EMBEDDING_MODEL='<installed-model:tag>'
+export RAG_WORKBENCH_EMBEDDING_REVISION='<installed-model-digest>'
+export RAG_WORKBENCH_EMBEDDING_DIMENSIONS='<model-dimension>'
+export RAG_WORKBENCH_OLLAMA_MODEL='<installed-generator:tag>'
+export RAG_WORKBENCH_GENERATION_REVISION='<installed-generator-digest>'
+export RAG_WORKBENCH_OLLAMA_URL=http://localhost:11434
+export RAG_WORKBENCH_QDRANT_URL=http://localhost:6333
+export RAG_WORKBENCH_QDRANT_COLLECTION=rag_evidence_v2
+python3 -m uvicorn rag_workbench.api:app --host 127.0.0.1 --port 8000
+```
+
+The API selects `configs/pipelines/local-real.yaml` when this profile is set. Missing model identity fails startup; missing/drifted models and incompatible dimensions fail execution. This path still uses the checked-in fixture corpus. Corpus management/publication and held-out evaluation are separate upcoming slices.
+
+The embedding adapter bounds batch count/input bytes and checks response cardinality, dimensions and finite/nonzero values. Both embedding and generation digest checks reject mutable-tag drift. Generation uses the remaining runtime deadline as its network timeout and sets an output-token limit; this is not preemptive cancellation and multiple HTTP calls can still exceed a single wall-clock deadline before runtime rejects the result.
+
+Manifests now retain embedding identity, content/policy corpus fingerprint and candidate IDs/ranks/scores without raw evidence. BM25 token statistics persist at `<storage>/indexes/bm25-v2.sqlite`. Versioned component schemas are validated at compile time. The old deterministic profile and fingerprint remain available.
+
+Verification covers deterministic scoring, database reopen, exact boundaries, scope isolation and provider response contracts. No local model or Qdrant listener was available during implementation, so live and M3 resource acceptance remain outstanding.
 
 
 ---

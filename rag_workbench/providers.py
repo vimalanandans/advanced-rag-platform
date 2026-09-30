@@ -28,7 +28,10 @@ class QdrantVectorIndex:
     def create_index(self, dimensions: int) -> None:
         """Create the collection once, without overwriting an existing local index."""
         try:
-            self._request("GET", f"/collections/{self.collection}")
+            existing = self._request("GET", f"/collections/{self.collection}")
+            vectors = existing.get("result", {}).get("config", {}).get("params", {}).get("vectors", {})
+            if vectors.get("size") != dimensions or vectors.get("distance") != "Cosine":
+                raise ValueError("vector collection is incompatible; create a new versioned index")
             return
         except HTTPError as error:
             if error.code != 404:
@@ -60,14 +63,28 @@ class QdrantVectorIndex:
 class OllamaModelProvider:
     """Optional local generation adapter. The deterministic generator remains the test default."""
 
-    def __init__(self, url: str = "http://localhost:11434", model: str = "llama3.2", allow_remote: bool = False) -> None:
+    def __init__(self, url: str = "http://localhost:11434", model: str = "llama3.2", allow_remote: bool = False, revision: str | None = None) -> None:
         _validate_provider_url(url, allow_remote, {"ollama"})
         self.url, self.model = url.rstrip("/"), model
+        self.revision = revision
 
-    def generate(self, prompt: str) -> str:
-        request = Request(f"{self.url}/api/generate", data=json.dumps({"model": self.model, "prompt": prompt, "stream": False}).encode(), method="POST", headers={"Content-Type": "application/json"})
-        with urlopen(request, timeout=90) as response:  # nosec B310: explicit local/provider URL
-            return json.loads(response.read())["response"]
+    def _assert_revision(self, timeout: float) -> None:
+        if self.revision is not None:
+            with urlopen(f"{self.url}/api/tags", timeout=timeout) as response:
+                models = json.loads(response.read()).get("models", [])
+            if not any(item.get("name") == self.model and item.get("digest") == self.revision for item in models):
+                raise ValueError("generation model is unavailable or its digest changed")
+
+    def generate(self, prompt: str, *, timeout: float = 90, max_tokens: int | None = None) -> str:
+        self._assert_revision(timeout)
+        payload = {"model": self.model, "prompt": prompt, "stream": False}
+        if max_tokens is not None:
+            payload["options"] = {"num_predict": max_tokens}
+        request = Request(f"{self.url}/api/generate", data=json.dumps(payload).encode(), method="POST", headers={"Content-Type": "application/json"})
+        with urlopen(request, timeout=timeout) as response:  # nosec B310: explicit local/provider URL
+            answer = json.loads(response.read())["response"]
+        self._assert_revision(timeout)
+        return answer
 
 
 @dataclass(frozen=True)

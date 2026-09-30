@@ -1,0 +1,61 @@
+{
+  "task_id": "v2-03-retrieval-adapters",
+  "problem": "Fixture scoring and hash vectors did not provide real lexical/semantic provider contracts.",
+  "query_or_content_class": "identifiers, lexical scoring and semantic adapter contracts",
+  "hypothesis": "Versioned BM25/exact components and explicit embedding composition preserve the fixture while enabling measurable real retrieval.",
+  "baseline": {
+    "tests": 57
+  },
+  "experiment": {
+    "suite": "tests/test_real_retrieval.py"
+  },
+  "files_changed": [
+    "rag_workbench/lexical.py",
+    "rag_workbench/embeddings.py",
+    "rag_workbench/local_real.py",
+    "rag_workbench/retrieval.py",
+    "rag_workbench/providers.py",
+    "rag_workbench/components.py",
+    "rag_workbench/runtime.py",
+    "rag_workbench/contracts.py",
+    "rag_workbench/graph.py",
+    "rag_workbench/api.py",
+    "pyproject.toml",
+    "configs/pipelines/local-real.yaml",
+    "tests/test_real_retrieval.py",
+    "README.md",
+    "docs/reference/configuration.md",
+    "docs/v2/local-real-profile.md",
+    "docs/v2/implementation-status.md",
+    "docs/adr/013-versioned-local-real-retrieval.md",
+    "docs/research/local-retrieval-baseline.md",
+    "docs/doc.md"
+  ],
+  "commands_run": [
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q",
+    "python3 scripts/check_docs.py",
+    "python3 -m compileall -q rag_workbench",
+    "local Ollama/Qdrant readiness probes",
+    "git diff --check"
+  ],
+  "tests_run": [
+    "70 passed"
+  ],
+  "metrics_before": {
+    "tests": 57
+  },
+  "metrics_after": {
+    "tests": 70
+  },
+  "failures": [
+    "One composition test failed after model-revision edit; corrected before acceptance",
+    "Ollama/Qdrant readiness: connection refused"
+  ],
+  "root_causes": [
+    "Incorrect tuple key during edit fixed",
+    "Local services not running"
+  ],
+  "regressions": [],
+  "decision": "iterate",
+  "notes": "Provider contracts and deterministic scoring verified. Local-real operational/quality promotion awaits live providers, hierarchy/verification/routing and representative A\u2013F experiments."
+}

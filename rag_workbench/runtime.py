@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import time
 import uuid
+import hashlib
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -34,6 +36,7 @@ class ExecutionContext:
     iterations: int = 0
     loop_outcomes: list[dict[str, Any]] = field(default_factory=list)
     forced_abstention: bool = False
+    retrieval_candidates: list[dict[str, Any]] = field(default_factory=list)
 
     def assert_within_deadline(self) -> None:
         if (time.monotonic() - self.started_at) * 1000 > self.budget.max_latency_ms:
@@ -72,11 +75,13 @@ class ExecutionContext:
 
 
 class WorkbenchRuntime:
-    def __init__(self, registry: ComponentRegistry | None = None, trace_store: TraceStore | None = None, model_version: str = "deterministic-local-generator@1.0.0") -> None:
+    def __init__(self, registry: ComponentRegistry | None = None, trace_store: TraceStore | None = None, model_version: str = "deterministic-local-generator@1.0.0", *, embedding_identity: dict[str, Any] | None = None, index_revisions: dict[str, str] | None = None) -> None:
         self.registry = registry or baseline_registry()
         self.trace_store = trace_store or LocalTraceStore()
         self.model_version = model_version
         self.evidence: list[Evidence] = []
+        self.embedding_identity = embedding_identity or {}
+        self.index_revisions = index_revisions or {}
 
     def set_evidence(self, evidence: list[Evidence]) -> None:
         self.evidence = evidence
@@ -138,6 +143,9 @@ class WorkbenchRuntime:
             if set(outputs) != set(node.outputs):
                 raise ValueError(f"component {node.component} returned outputs outside its contract")
             self._validate_output_values(node.outputs, outputs)
+            for port, kind in node.outputs.items():
+                if kind == "candidates":
+                    context.retrieval_candidates.append({"node_id": node.id, "iteration": iteration, "candidates": [{"evidence_id": item.evidence.id, "revision": item.evidence.revision, "lane": item.lane, "rank": item.rank, "score": item.score} for item in outputs[port]]})
             self._account_outputs(outputs, context)
             context.assert_within_deadline()
             state[node.id] = outputs
@@ -248,9 +256,11 @@ class WorkbenchRuntime:
             run_id=run_id, trace_id=trace_id, tenant_id=request.tenant_id, user_id=request.user_id,
             pipeline_id=plan.pipeline.id, pipeline_version=plan.pipeline.version, graph_fingerprint=plan.fingerprint,
             component_versions={node.component.split("@")[0]: node.component.split("@")[1] for node in plan.pipeline.graph.nodes},
-            model_version=self.model_version, index_revisions={"local": "fixture-v1"},
+            model_version=self.model_version, index_revisions={**self.index_revisions, "corpus": hashlib.sha256(json.dumps(sorted([item.model_dump(mode="json", exclude={"source_uri"}) for item in self.evidence], key=lambda item: item["id"]), sort_keys=True, separators=(",", ":")).encode()).hexdigest()},
             token_usage=context.usage, node_executions=executions, status=status, error=error,
             loop_outcomes=context.loop_outcomes,
+            embedding_identity=self.embedding_identity,
+            retrieval_candidates=context.retrieval_candidates,
         )
 
 
@@ -267,6 +277,15 @@ def _safe_error(error: Exception) -> str:
 
 def demo_runtime(trace_store: TraceStore | None = None, provider_profile: LocalProviderProfile | None = None) -> WorkbenchRuntime:
     from rag_workbench.ingestion import ingest_path
+
+    if provider_profile is None:
+        import os
+        profile_name = os.environ.get("RAG_WORKBENCH_PROFILE", "deterministic")
+        if profile_name == "local-real":
+            from rag_workbench.local_real import local_real_runtime
+            return local_real_runtime(trace_store=trace_store)
+        if profile_name != "deterministic":
+            raise ValueError("RAG_WORKBENCH_PROFILE must be deterministic or local-real")
 
     profile = provider_profile or provider_profile_from_environment()
     dense_retriever = (

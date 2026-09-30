@@ -9,6 +9,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 import yaml
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
 
 from rag_workbench.contracts import EdgeKind, Pipeline
 from rag_workbench.registry import ComponentRegistry
@@ -59,6 +61,12 @@ def compile_pipeline(pipeline: Pipeline, registry: ComponentRegistry) -> Executi
         except KeyError as error:
             raise GraphValidationError(str(error)) from error
         manifest = manifests[node.id]
+        try:
+            Draft202012Validator.check_schema(manifest.config_schema)
+        except SchemaError as error:
+            raise GraphValidationError(f"component {node.component} has an invalid configuration schema") from error
+        if any(Draft202012Validator(manifest.config_schema).iter_errors(node.config)):
+            raise GraphValidationError(f"node {node.id} configuration violates its component schema")
         if set(node.inputs) != set(manifest.input_types):
             raise GraphValidationError(f"node {node.id} inputs must match component contract")
         if set(node.outputs) != set(manifest.output_types):

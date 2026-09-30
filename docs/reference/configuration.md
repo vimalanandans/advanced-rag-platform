@@ -56,3 +56,12 @@ RAG_WORKBENCH_GENERATION_MODE=ollama \
 RAG_WORKBENCH_OLLAMA_MODEL='<installed-local-model>' \
 docker compose up --build
 ```
+
+
+## Experimental V2 profile
+
+`RAG_WORKBENCH_PROFILE` selects `deterministic` (default) or `local-real`. Local-real additionally requires
+`RAG_WORKBENCH_EMBEDDING_MODEL`, `RAG_WORKBENCH_EMBEDDING_REVISION`, `RAG_WORKBENCH_EMBEDDING_DIMENSIONS`,
+`RAG_WORKBENCH_OLLAMA_MODEL` and `RAG_WORKBENCH_GENERATION_REVISION`. Revisions are installed model digests.
+The profile uses the existing local URLs/storage settings and defaults its Qdrant collection to `rag_evidence_v2`.
+See [local-real instructions and limitations](../v2/local-real-profile.md). These settings do not prove provider readiness.

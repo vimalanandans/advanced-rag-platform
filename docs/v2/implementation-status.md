@@ -38,3 +38,8 @@ Implemented explicit graph-schema-2 terminal bindings, enforced loop fallback, l
 ## Scope and persistence milestone (2026-09-30)
 
 Implemented mandatory authorized point-ID filtering inside vector search, content/scope-sensitive point identity, empty-scope no-op, fail-closed unexpected results, immutable/idempotent trace writes, JSON UUID path checks and safe error traces. Verification: 57 tests passed. Qdrant request-contract and in-memory shared-index tests pass; live Qdrant/PostgreSQL checks remain unverified. See ADR-012 and the [filter research record](../research/qdrant-authorized-point-filter.md).
+
+
+## Retrieval adapter milestone (2026-09-30)
+
+Implemented persistent BM25, exact identifiers/phrases, neutral embedding identity, digest-pinned Ollama batches, embedding-backed Qdrant retrieval, collection-dimension validation, experimental local-real graph/API composition, component config validation and candidate/corpus/embedding trace metadata. All 70 tests pass; local Ollama and Qdrant probes return connection refused. Real semantic quality, model selection, hierarchy, claim checks and A–F acceptance remain outstanding. See [profile](local-real-profile.md).

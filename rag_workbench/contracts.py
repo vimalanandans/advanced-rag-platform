@@ -175,6 +175,8 @@ class RunManifest(BaseModel):
     status: Literal["completed", "failed"] = "completed"
     error: str | None = None
     loop_outcomes: list[dict[str, Any]] = Field(default_factory=list)
+    embedding_identity: dict[str, Any] = Field(default_factory=dict)
+    retrieval_candidates: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class RunResult(BaseModel):

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
+import time
 
 from rag_workbench.contracts import ContextPlan, Evidence, TokenUsage
 from rag_workbench.providers import OllamaModelProvider
@@ -59,7 +60,12 @@ def generate(inputs: dict[str, Any], context: Any, _config: dict[str, Any], prov
                 "Answer only from the approved local evidence below. If it is insufficient, say so. "
                 "Do not invent citations or facts.\n\nQuestion: " + inputs["question"] + "\n\nEvidence:\n" + excerpts
             )
-            answer = provider.generate(prompt).strip()
+            if isinstance(provider, OllamaModelProvider):
+                context.assert_within_deadline()
+                remaining = context.budget.max_latency_ms / 1000 - (time.monotonic() - context.started_at)
+                answer = provider.generate(prompt, timeout=max(0.001, remaining), max_tokens=context.budget.max_output_tokens).strip()
+            else:
+                answer = provider.generate(prompt).strip()
             if not answer:
                 raise RuntimeError("local model returned an empty answer")
         citations, abstained = selected[:2], False
