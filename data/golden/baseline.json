@@ -1,0 +1,14 @@
+[
+  {
+    "id": "citations-and-abstention",
+    "question": "When should a RAG system abstain?",
+    "expected_evidence_ids": ["local-demo:rag_basics:section:evidence-first-rag:1"],
+    "expect_abstention": false
+  },
+  {
+    "id": "unsupported-question",
+    "question": "What is the capital of Mars?",
+    "expected_evidence_ids": [],
+    "expect_abstention": true
+  }
+]

@@ -1,0 +1,5 @@
+import { LocalSettings } from "../types";
+
+export function Settings({ settings, onChange }: { settings: LocalSettings; onChange: (next: LocalSettings) => void }) {
+  return <div className="drawer-stack"><span className="eyebrow">DATA & TRUST</span><h3>Local development connection</h3><p className="muted">Preferences and drafts are saved in this browser. Do not use production credentials here.</p><label>Workspace tenant<input value={settings.tenant} onChange={event => onChange({ ...settings, tenant: event.target.value })} /></label><label>Local user<input value={settings.user} onChange={event => onChange({ ...settings, user: event.target.value })} /></label><label>Local admin token<input type="password" value={settings.token} onChange={event => onChange({ ...settings, token: event.target.value })} /></label><section className="trust-card"><b>What AI receives</b><span>The current pipeline context and approved references chosen for the request.</span></section><section className="trust-card"><b>Recovery</b><span>Accepted AI proposals are one undoable action. Local layout preferences persist in this browser.</span></section></div>;
+}

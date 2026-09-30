@@ -1,0 +1,431 @@
+{
+  "schema_version": "1.1.0",
+  "experiment_id": "v2-fixture-baseline",
+  "run_id": "549d9645-0c6a-416f-a9e2-be59b4bb1028",
+  "hypothesis": "The preserved fixture can produce a versioned, persisted ranking baseline.",
+  "baseline": "local-evidence-baseline@1.0.0",
+  "candidate_strategy": {
+    "schema_version": "1.0.0",
+    "strategy_id": "deterministic_fixture",
+    "version": "1.0.0",
+    "graph_fingerprint": "bd09657a714267231398fb586187c369ee2b3c5a2ec805f5e37be63d008e619c",
+    "supported_query_classes": [
+      "semantic"
+    ],
+    "supported_content_classes": [
+      "markdown"
+    ],
+    "required_components": [
+      "query.classifier@1.0.0",
+      "retrieval.bm25@1.0.0",
+      "retrieval.dense@1.0.0",
+      "retrieval.vectorless@1.0.0",
+      "fusion.rrf@1.0.0",
+      "verification.evidence@1.0.0",
+      "context.evidence_packer@1.0.0",
+      "generation.local@1.0.0"
+    ],
+    "required_models": [
+      "deterministic-local-generator@1.0.0"
+    ],
+    "required_indexes": [],
+    "latency_expectations": {
+      "budget_ms": 15000
+    },
+    "resource_requirements": {
+      "profile": "deterministic",
+      "model_download": false
+    },
+    "known_limitations": [
+      "Hashed vectors, simplified lexical scoring, two regression cases; not held-out research."
+    ],
+    "evaluation_dataset": "baseline-fixture@1.0.0",
+    "promotion_status": "experimental"
+  },
+  "dataset_snapshot": {
+    "schema_version": "1.0.0",
+    "dataset_id": "baseline-fixture",
+    "version": "1.0.0",
+    "corpus_revision": "b72dd3747a84243f9541b04e461658373ca71d676f0e4176bb18714a5a2d481a",
+    "provenance": "Checked-in data/fixtures/rag_basics.md and data/golden/baseline.json",
+    "license": "Repository LICENSE; fixture only",
+    "cases": [
+      {
+        "schema_version": "1.0.0",
+        "case_id": "citations-and-abstention",
+        "query": "When should a RAG system abstain?",
+        "query_class": "semantic",
+        "corpus_revision": "b72dd3747a84243f9541b04e461658373ca71d676f0e4176bb18714a5a2d481a",
+        "source_group": "rag-basics",
+        "split": "regression",
+        "expected_evidence_ids": [
+          "local-demo:rag_basics:section:evidence-first-rag:1"
+        ],
+        "hard_negative_ids": [],
+        "expected_claims": [],
+        "expected_abstention": false,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": ""
+      },
+      {
+        "schema_version": "1.0.0",
+        "case_id": "unsupported-question",
+        "query": "What is the capital of Mars?",
+        "query_class": "semantic",
+        "corpus_revision": "b72dd3747a84243f9541b04e461658373ca71d676f0e4176bb18714a5a2d481a",
+        "source_group": "rag-basics",
+        "split": "regression",
+        "expected_evidence_ids": [],
+        "hard_negative_ids": [],
+        "expected_claims": [],
+        "expected_abstention": true,
+        "relevance": {},
+        "policy_constraints": {},
+        "notes": ""
+      }
+    ]
+  },
+  "configuration_snapshot": {
+    "strategy": {
+      "schema_version": "1.0.0",
+      "strategy_id": "deterministic_fixture",
+      "version": "1.0.0",
+      "graph_fingerprint": "bd09657a714267231398fb586187c369ee2b3c5a2ec805f5e37be63d008e619c",
+      "supported_query_classes": [
+        "semantic"
+      ],
+      "supported_content_classes": [
+        "markdown"
+      ],
+      "required_components": [
+        "query.classifier@1.0.0",
+        "retrieval.bm25@1.0.0",
+        "retrieval.dense@1.0.0",
+        "retrieval.vectorless@1.0.0",
+        "fusion.rrf@1.0.0",
+        "verification.evidence@1.0.0",
+        "context.evidence_packer@1.0.0",
+        "generation.local@1.0.0"
+      ],
+      "required_models": [
+        "deterministic-local-generator@1.0.0"
+      ],
+      "required_indexes": [],
+      "latency_expectations": {
+        "budget_ms": 15000
+      },
+      "resource_requirements": {
+        "profile": "deterministic",
+        "model_download": false
+      },
+      "known_limitations": [
+        "Hashed vectors, simplified lexical scoring, two regression cases; not held-out research."
+      ],
+      "evaluation_dataset": "baseline-fixture@1.0.0",
+      "promotion_status": "experimental"
+    },
+    "request": {
+      "tenant_id": "local",
+      "user_id": "local-admin",
+      "allowed_corpora": [],
+      "allowed_revisions": {},
+      "applicability_tags": [],
+      "requested_at": "2026-09-29T00:00:00Z"
+    },
+    "k": 5,
+    "ranking_component": "fusion.rrf@1.0.0",
+    "split": "regression"
+  },
+  "pipeline_snapshot": {
+    "id": "local-evidence-baseline",
+    "version": "1.0.0",
+    "tenant_id": "local",
+    "description": "Three-lane cited-answer baseline",
+    "budgets": {
+      "max_total_tokens": 30000,
+      "max_context_tokens": 1200,
+      "max_output_tokens": 3000,
+      "max_latency_ms": 15000,
+      "max_tool_calls": 0,
+      "max_iterations": 2
+    },
+    "graph": {
+      "nodes": [
+        {
+          "id": "classify",
+          "component": "query.classifier@1.0.0",
+          "config": {},
+          "inputs": {
+            "query": "$query"
+          },
+          "outputs": {
+            "route": "string"
+          }
+        },
+        {
+          "id": "bm25",
+          "component": "retrieval.bm25@1.0.0",
+          "config": {},
+          "inputs": {
+            "query": "$query",
+            "evidence": "$evidence"
+          },
+          "outputs": {
+            "candidates": "candidates"
+          }
+        },
+        {
+          "id": "dense",
+          "component": "retrieval.dense@1.0.0",
+          "config": {},
+          "inputs": {
+            "query": "$query",
+            "evidence": "$evidence"
+          },
+          "outputs": {
+            "candidates": "candidates"
+          }
+        },
+        {
+          "id": "vectorless",
+          "component": "retrieval.vectorless@1.0.0",
+          "config": {},
+          "inputs": {
+            "query": "$query",
+            "evidence": "$evidence"
+          },
+          "outputs": {
+            "candidates": "candidates"
+          }
+        },
+        {
+          "id": "fuse",
+          "component": "fusion.rrf@1.0.0",
+          "config": {},
+          "inputs": {
+            "candidate_lists": [
+              "bm25.candidates",
+              "dense.candidates",
+              "vectorless.candidates"
+            ]
+          },
+          "outputs": {
+            "candidates": "candidates"
+          }
+        },
+        {
+          "id": "verify",
+          "component": "verification.evidence@1.0.0",
+          "config": {},
+          "inputs": {
+            "candidates": "fuse.candidates"
+          },
+          "outputs": {
+            "sufficient": "bool"
+          }
+        },
+        {
+          "id": "context",
+          "component": "context.evidence_packer@1.0.0",
+          "config": {},
+          "inputs": {
+            "candidates": "fuse.candidates"
+          },
+          "outputs": {
+            "context": "context"
+          }
+        },
+        {
+          "id": "generate",
+          "component": "generation.local@1.0.0",
+          "config": {},
+          "inputs": {
+            "question": "$query",
+            "context": "context.context",
+            "sufficient": "verify.sufficient",
+            "candidates": "fuse.candidates"
+          },
+          "outputs": {
+            "answer": "answer",
+            "citations": "evidence_list",
+            "abstained": "bool"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "classify",
+          "target": "bm25",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "classify",
+          "target": "dense",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "classify",
+          "target": "vectorless",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "bm25",
+          "target": "fuse",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "dense",
+          "target": "fuse",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "vectorless",
+          "target": "fuse",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "fuse",
+          "target": "verify",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "fuse",
+          "target": "context",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "verify",
+          "target": "context",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "context",
+          "target": "generate",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "fuse",
+          "target": "generate",
+          "kind": "data",
+          "condition": null
+        },
+        {
+          "source": "verify",
+          "target": "generate",
+          "kind": "data",
+          "condition": null
+        }
+      ],
+      "loops": []
+    }
+  },
+  "dataset_fingerprint": "64769ea9bd0f4d088d4f683c49ee22c3349b8756b67b2ca36a2985e058e3490b",
+  "config_fingerprint": "e9dd5a13675f64c09c98092034605cc2f422f3f237b49620bf1baf6abfe2c1d3",
+  "split": "regression",
+  "status": "completed",
+  "case_results": [
+    {
+      "case_id": "citations-and-abstention",
+      "query_class": "semantic",
+      "status": "completed",
+      "passed": true,
+      "run_id": "99e79dcd-f11e-4424-b6dc-b0ebc7811bc0",
+      "ranked_evidence_ids": [
+        "local-demo:rag_basics:section:evidence-first-rag:1"
+      ],
+      "citation_ids": [
+        "local-demo:rag_basics:section:evidence-first-rag:1"
+      ],
+      "abstained": false,
+      "ranking": {
+        "schema_version": "1.0.0",
+        "k": 5,
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.2,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0,
+        "hard_negative_hits": 0,
+        "relevant_count": 1,
+        "retrieved_count": 1,
+        "unavailable_reason": null
+      },
+      "latency_ms": 1.2976250000065193,
+      "token_usage": {
+        "input_tokens": 30,
+        "output_tokens": 34,
+        "context_tokens": 30,
+        "retrieval_reasoning_tokens": 6
+      },
+      "claim_support": null
+    },
+    {
+      "case_id": "unsupported-question",
+      "query_class": "semantic",
+      "status": "completed",
+      "passed": true,
+      "run_id": "1d4f0ab8-1350-4761-82d7-9e39f55d40a8",
+      "ranked_evidence_ids": [],
+      "citation_ids": [],
+      "abstained": true,
+      "ranking": {
+        "schema_version": "1.0.0",
+        "k": 5,
+        "recall_at_k": null,
+        "precision_at_k": 0.0,
+        "mrr": null,
+        "ndcg_at_k": null,
+        "hard_negative_hits": 0,
+        "relevant_count": 0,
+        "retrieved_count": 0,
+        "unavailable_reason": "no expected relevant evidence"
+      },
+      "latency_ms": 0.8618749998277053,
+      "token_usage": {
+        "input_tokens": 0,
+        "output_tokens": 8,
+        "context_tokens": 0,
+        "retrieval_reasoning_tokens": 6
+      },
+      "claim_support": null
+    }
+  ],
+  "metrics": {
+    "cases": 2,
+    "completed_cases": 2,
+    "fixture_passes": 2,
+    "citation_precision": null,
+    "citation_coverage": null,
+    "unsupported_claim_rate": null,
+    "peak_memory_bytes": null,
+    "recall_at_k": {
+      "mean": 1.0,
+      "denominator": 1
+    },
+    "precision_at_k": {
+      "mean": 0.1,
+      "denominator": 2
+    },
+    "mrr": {
+      "mean": 1.0,
+      "denominator": 1
+    },
+    "ndcg_at_k": {
+      "mean": 1.0,
+      "denominator": 1
+    }
+  },
+  "failures": [],
+  "decision": "iterate",
+  "notes": "Deterministic fixture measurement only. No semantic retrieval, claim support, or promotion evidence. Missing metrics remain null."
+}

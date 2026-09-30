@@ -1,0 +1,67 @@
+services:
+  control-api:
+    build: .
+    command: uvicorn rag_workbench.api:app --host 0.0.0.0 --port 8000
+    ports: ["8000:8000"]
+    volumes: [".:/workspace"]
+    environment:
+      RAG_WORKBENCH_STORAGE: /workspace/.local
+      RAG_WORKBENCH_DATABASE_URL: postgresql://rag:rag@postgres:5432/rag_workbench
+      RAG_WORKBENCH_QDRANT_URL: http://qdrant:6333
+      RAG_WORKBENCH_OLLAMA_URL: http://ollama:11434
+      RAG_WORKBENCH_DENSE_MODE: ${RAG_WORKBENCH_DENSE_MODE:-deterministic}
+      RAG_WORKBENCH_GENERATION_MODE: ${RAG_WORKBENCH_GENERATION_MODE:-deterministic}
+      RAG_WORKBENCH_OLLAMA_MODEL: ${RAG_WORKBENCH_OLLAMA_MODEL:-llama3.2}
+    depends_on:
+      postgres: {condition: service_healthy}
+      minio: {condition: service_started}
+      qdrant: {condition: service_started}
+      ollama: {condition: service_started}
+  worker:
+    build: .
+    command: python -m rag_workbench.worker
+    volumes: [".:/workspace"]
+    environment:
+      RAG_WORKBENCH_STORAGE: /workspace/.local
+      RAG_WORKBENCH_DATABASE_URL: postgresql://rag:rag@postgres:5432/rag_workbench
+  studio:
+    build: ./apps/studio
+    ports: ["5173:5173"]
+    environment:
+      VITE_PROXY_TARGET: http://control-api:8000
+    depends_on: [control-api]
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: rag_workbench
+      POSTGRES_USER: rag
+      POSTGRES_PASSWORD: rag
+    ports: ["5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rag -d rag_workbench"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniosecret
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["minio-data:/data"]
+  qdrant:
+    image: qdrant/qdrant:v1.11.3
+    ports: ["6333:6333"]
+    volumes: ["qdrant-data:/qdrant/storage"]
+  ollama:
+    image: ollama/ollama:latest
+    ports: ["11434:11434"]
+    volumes: ["ollama-data:/root/.ollama"]
+
+volumes:
+  postgres-data:
+  minio-data:
+  qdrant-data:
+  ollama-data:

@@ -1,0 +1,75 @@
+{
+  "task_id": "v2-00-and-v2-02-initial",
+  "problem": "V2 requirements were not specified and the existing evaluation retained only citation/abstention pass counts.",
+  "query_or_content_class": "Repository documentation and two deterministic regression fixture questions.",
+  "hypothesis": "Preserve graph behavior while adding traceable V2 specifications and a versioned fixture experiment record with ranking metrics.",
+  "baseline": {
+    "tests_passed": 26,
+    "golden_cases": 2,
+    "retrieval_behavior": "unchanged deterministic fixture"
+  },
+  "experiment": {
+    "runner": "scripts/run_fixture_experiment.py",
+    "latest_result": "experiments/v2-02-fixture-baseline/v2-fixture-baseline--549d9645-0c6a-416f-a9e2-be59b4bb1028.json"
+  },
+  "files_changed": [
+    "AGENT.md",
+    "AGENTS.md",
+    "README.md",
+    "docs/README.md",
+    "docs/definition-of-done/README.md",
+    "docs/evaluation/README.md",
+    "docs/product/roadmap-and-specification.md",
+    "docs/v2/",
+    "docs/research/README.md",
+    "docs/adr/010-v2-incremental-evidence-platform.md",
+    "docs/doc.md",
+    "experiments/",
+    "rag_workbench/experimentation.py",
+    "scripts/check_docs.py",
+    "scripts/run_fixture_experiment.py",
+    "tests/test_experimentation.py"
+  ],
+  "commands_run": [
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q",
+    "npm --prefix apps/studio run build",
+    "python3 -m compileall -q rag_workbench scripts/run_fixture_experiment.py",
+    "python3 scripts/check_docs.py",
+    "python3 scripts/build_docs_compendium.py",
+    "python3 scripts/run_fixture_experiment.py --output experiments/v2-02-fixture-baseline",
+    "git diff --check",
+    "docker compose config --quiet",
+    "python3 -m ruff check rag_workbench/experimentation.py scripts/run_fixture_experiment.py tests/test_experimentation.py"
+  ],
+  "tests_run": [
+    "39 passing tests, including 13 new experiment tests",
+    "Studio TypeScript/Vite production build passed",
+    "Python compilation passed",
+    "Documentation validation passed for seven API routes",
+    "git diff --check passed"
+  ],
+  "metrics_before": {
+    "golden_fixture_passes": 2
+  },
+  "metrics_after": {
+    "golden_fixture_passes": 2,
+    "recall_at_5": 1.0,
+    "mrr_within_5": 1.0,
+    "ndcg_at_5": 1.0,
+    "ranking_metric_denominator": 1,
+    "semantic_retrieval_gain": null
+  },
+  "failures": [
+    "rtk unavailable",
+    "Docker unavailable: Compose and live-provider acceptance blocked",
+    "ruff module unavailable",
+    "First intermediate experiment omitted full input snapshots and durable traces"
+  ],
+  "root_causes": [
+    "Missing environment tools",
+    "Initial experiment record design omitted reproduction inputs; corrected in subsequent 1.1.0 result"
+  ],
+  "regressions": [],
+  "decision": "iterate",
+  "notes": "Specifications and initial fixture runner delivered. No strategy promoted. Local-real and later V2 slices remain pending. Existing uncommitted work preserved; changes left uncommitted for review. Early result retained rather than overwritten."
+}

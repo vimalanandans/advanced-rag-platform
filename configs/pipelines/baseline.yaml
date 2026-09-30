@@ -1,0 +1,57 @@
+pipeline:
+  id: local-evidence-baseline
+  version: 1.0.0
+  tenant_id: local
+  description: Three-lane cited-answer baseline
+  budgets:
+    max_total_tokens: 30000
+    max_context_tokens: 1200
+    max_output_tokens: 3000
+    max_latency_ms: 15000
+    max_iterations: 2
+  nodes:
+    - id: classify
+      component: query.classifier@1.0.0
+      inputs: {query: $query}
+      outputs: {route: string}
+    - id: bm25
+      component: retrieval.bm25@1.0.0
+      inputs: {query: $query, evidence: $evidence}
+      outputs: {candidates: candidates}
+    - id: dense
+      component: retrieval.dense@1.0.0
+      inputs: {query: $query, evidence: $evidence}
+      outputs: {candidates: candidates}
+    - id: vectorless
+      component: retrieval.vectorless@1.0.0
+      inputs: {query: $query, evidence: $evidence}
+      outputs: {candidates: candidates}
+    - id: fuse
+      component: fusion.rrf@1.0.0
+      inputs: {candidate_lists: [bm25.candidates, dense.candidates, vectorless.candidates]}
+      outputs: {candidates: candidates}
+    - id: verify
+      component: verification.evidence@1.0.0
+      inputs: {candidates: fuse.candidates}
+      outputs: {sufficient: bool}
+    - id: context
+      component: context.evidence_packer@1.0.0
+      inputs: {candidates: fuse.candidates}
+      outputs: {context: context}
+    - id: generate
+      component: generation.local@1.0.0
+      inputs: {question: $query, context: context.context, sufficient: verify.sufficient, candidates: fuse.candidates}
+      outputs: {answer: answer, citations: evidence_list, abstained: bool}
+  edges:
+    - classify -> bm25
+    - classify -> dense
+    - classify -> vectorless
+    - bm25 -> fuse
+    - dense -> fuse
+    - vectorless -> fuse
+    - fuse -> verify
+    - fuse -> context
+    - verify -> context
+    - context -> generate
+    - fuse -> generate
+    - verify -> generate

@@ -1,0 +1,18 @@
+{
+  "task_id": "",
+  "problem": "",
+  "query_or_content_class": "",
+  "hypothesis": "",
+  "baseline": {},
+  "experiment": {},
+  "files_changed": [],
+  "commands_run": [],
+  "tests_run": [],
+  "metrics_before": {},
+  "metrics_after": {},
+  "failures": [],
+  "root_causes": [],
+  "regressions": [],
+  "decision": "iterate",
+  "notes": "Template only. Replace placeholders with observed evidence; decision must be accept, reject, or iterate."
+}
