@@ -1,6 +1,6 @@
 # Experimental local-real profile
 
-Implemented as a composition path, not yet operationally accepted. It uses persistent SQLite BM25, an exact lane, digest-pinned Ollama embeddings, filtered Qdrant search and local generation. The structural lane, classifier, context gate and generation/claim behavior are still being upgraded; this is not the complete first V2 milestone.
+Implemented as a composition path, not yet operationally accepted. It uses persistent SQLite BM25, an exact lane, digest-pinned Ollama embeddings, filtered Qdrant search and local generation. It also includes structural parent context, transparent query classification, whole-block context and conservative quoted-claim verification. Reranking, measured routing and A–F acceptance remain pending.
 
 Set explicit model identities from the installed Ollama service; no downloads or model defaults are selected:
 

@@ -15,17 +15,12 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from rag_workbench.contracts import ComponentManifest, Evidence, RequestContext
+from rag_workbench.contracts import ComponentManifest, Evidence, RequestContext, QueryClass
 from rag_workbench.graph import ExecutionPlan, pipeline_snapshot
 from rag_workbench.runtime import WorkbenchRuntime
 
 VERSION = r"^\d+\.\d+\.\d+$"
 SAFE_ID = r"^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$"
-QueryClass = Literal[
-    "exact_identifier", "exact_phrase", "semantic", "comparison", "procedure",
-    "table", "visual", "temporal", "multi_hop", "relationship", "conversational",
-    "no_rag_required",
-]
 Split = Literal["development", "tuning", "held_out", "adversarial", "regression"]
 
 

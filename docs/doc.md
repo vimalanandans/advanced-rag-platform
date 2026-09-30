@@ -18,37 +18,39 @@ This file combines the Markdown documentation under `docs/` for convenient readi
 12. `adr/011-explicit-runtime-terminal-and-loop-outcomes.md`
 13. `adr/012-scoped-vector-search-and-immutable-traces.md`
 14. `adr/013-versioned-local-real-retrieval.md`
-15. `adr/template.md`
-16. `api/README.md`
-17. `architecture/README.md`
-18. `architecture/system.md`
-19. `data-engineer-guide/README.md`
-20. `definition-of-done/README.md`
-21. `design-principles/README.md`
-22. `developer-guide/README.md`
-23. `evaluation/README.md`
-24. `observability/README.md`
-25. `operations/README.md`
-26. `product/roadmap-and-specification.md`
-27. `product-ux/README.md`
-28. `product-ux/ai-native-workspace-guide.md`
-29. `reference/configuration.md`
-30. `research/README.md`
-31. `research/local-retrieval-baseline.md`
-32. `research/qdrant-authorized-point-filter.md`
-33. `security/README.md`
-34. `testing/README.md`
-35. `user-guide/first-local-run.md`
-36. `v2/current-system-assessment.md`
-37. `v2/evaluation-plan.md`
-38. `v2/implementation-status.md`
-39. `v2/local-real-profile.md`
-40. `v2/migration-plan.md`
-41. `v2/requirements.md`
-42. `v2/research-plan.md`
-43. `v2/runtime-contract.md`
-44. `v2/target-architecture.md`
-45. `validation/README.md`
+15. `adr/014-conservative-context-and-claim-verification.md`
+16. `adr/template.md`
+17. `api/README.md`
+18. `architecture/README.md`
+19. `architecture/system.md`
+20. `data-engineer-guide/README.md`
+21. `definition-of-done/README.md`
+22. `design-principles/README.md`
+23. `developer-guide/README.md`
+24. `evaluation/README.md`
+25. `observability/README.md`
+26. `operations/README.md`
+27. `product/roadmap-and-specification.md`
+28. `product-ux/README.md`
+29. `product-ux/ai-native-workspace-guide.md`
+30. `reference/configuration.md`
+31. `research/README.md`
+32. `research/local-retrieval-baseline.md`
+33. `research/qdrant-authorized-point-filter.md`
+34. `security/README.md`
+35. `testing/README.md`
+36. `user-guide/first-local-run.md`
+37. `v2/current-system-assessment.md`
+38. `v2/evaluation-plan.md`
+39. `v2/implementation-status.md`
+40. `v2/local-real-profile.md`
+41. `v2/migration-plan.md`
+42. `v2/requirements.md`
+43. `v2/research-plan.md`
+44. `v2/runtime-contract.md`
+45. `v2/target-architecture.md`
+46. `v2/verification-contract.md`
+47. `validation/README.md`
 
 
 ---
@@ -391,6 +393,31 @@ Keep v1 fixture components. Add persistent `retrieval.bm25@2.0.0` and `retrieval
 ## Consequences
 
 API profile selection is explicit, but the local-real graph remains experimental until hierarchy, verification, routing and experiments are accepted. No model license/default is assumed. Existing indexes remain intact; incompatible dimensions require a new collection. Candidate decisions and corpus/model identity are traceable. Live provider integration and M3 resource validation are outstanding; unit doubles do not demonstrate semantic recall.
+
+
+---
+
+<!-- Source: adr/014-conservative-context-and-claim-verification.md -->
+
+# ADR-014: Conservative structural context and claim verification
+
+## Status
+
+Accepted for the experimental V2 graph; representative quality acceptance pending.
+
+## Context
+
+Heading overlap did not preserve parent context. Generation truncated excerpts and attached citations without checking claims. A permissive semantic verifier would require calibration data not yet available.
+
+## Decision
+
+Add a versioned structural parser and bounded parent traversal within the authorized snapshot. Keep v1 ingestion unchanged. Classify twelve query classes with transparent rules, preserving the original and a safe all-lane fallback. Missing visual/table/relationship/conversation capabilities force insufficient evidence rather than pretending text retrieval supplies them.
+
+Pack whole evidence blocks with byte-based conservative token estimates, explicit source quotas and omission reasons. Detect unresolved multiple revisions of one source and explicitly annotated conflicting assertions. Generate complete quoted source sentences and validate each line against a real cited source sentence. Any unsupported line abstains; unsupported text is not returned as a verified answer. Bind the graph terminal to claim verification, never raw generation.
+
+## Consequences
+
+This is extractive source-fidelity checking, not general semantic entailment or a guarantee that the source is true. Paraphrases, malformed citations and changed qualifiers abstain. Structural PDF hierarchy and inferred semantic contradictions remain unimplemented. Routing does not suppress lanes until measured comparisons justify it. Trace decisions omit raw query and claim text; API results expose authorized claim details. No general evidence-sufficiency quality threshold is claimed.
 
 
 ---
@@ -2023,49 +2050,29 @@ An experiment is reproducible only when referenced corpus/index/model assets rem
 
 # V2 implementation status
 
-Updated 2026-09-30. This is a delivery record, not a claim that the entire V2 platform exists.
+Updated 2026-09-30. Specifications cover the full scope; runtime delivery is incremental and the full V2 platform is not yet accepted.
 
-## Delivered
+## Delivered milestones
 
-- V2-00: assessment, eight-layer architecture, migration/backlog, evaluation, research protocol, 27-group requirements map, ADR-010 and permanent AGENT.md contract.
-- Documentation alignment: authorization before retrieval, M3 target, first-milestone reranker/classifier/claim verification, truthful fixture retrieval wording and regenerated compendium.
-- Initial V2-02: typed dataset/case/strategy/experiment contracts; split and label validation; corpus/graph/model checks; Recall@K, Precision@K, MRR within K and graded nDCG@K; fixture runner; dataset/configuration/graph snapshots; atomic no-overwrite experiment publication; safe per-case failure records and explicit unavailable metrics.
+| Milestone | Implemented scope | Verification |
+| --- | --- | --- |
+| V2-00 | Assessment, architecture, migration/backlog, evaluation/research, 27-group requirements, AGENT.md | Documentation checks |
+| Initial V2-02 | Versioned fixture datasets/strategies/experiments, ranking metrics, split checks, snapshots and immutable experiment publication | 39 tests at milestone; two fixture cases pass |
+| Runtime safety | Explicit V2 terminal bindings, loop fallback/order, denial traces and typed evidence/candidate outputs | 49 tests; v1 fingerprint unchanged |
+| Scope/persistence | Mandatory Qdrant authorized-ID filter, content/scope-sensitive identities, no-overwrite traces and safe errors | 57 tests; provider request doubles, no live database |
+| Retrieval adapters | Persistent BM25, exact lane, pinned Ollama embeddings/generation, Qdrant composition, config schemas and candidate trace metadata | 70 tests; no live semantic-quality claim |
+| Structural/context/verification | Parent links/traversal, twelve query classes, whole-block context/quota decisions, explicit conflicts, complete quoted-sentence citation verification | 89 tests; full graph with provider doubles |
 
-## Evidence
+## Current limits and next steps
 
-| Check | Result |
-| --- | --- |
-| Baseline test suite before changes | 26 passed |
-| Suite after first experiment slice | 39 passed, including 13 new experiment tests |
-| Studio production build | Passed during baseline audit; no Studio files changed |
-| Python compilation | Passed during baseline audit; final verification recorded in the loop artifact |
-| Documentation/reference checks | Passed; seven API routes |
-| Fixture experiment | Two of two regression cases pass; no candidate strategy or semantic-quality improvement claimed |
-| Docker Compose / live providers | Blocked: Docker command unavailable |
-| Ruff | Blocked: module not installed |
+- Ollama and Qdrant readiness probes return connection refused; Docker and Ruff are unavailable. Compose startup, PostgreSQL durability/concurrency and M3 memory/latency acceptance remain unverified.
+- The local-real profile is experimental, using the checked-in corpus. Managed ingestion/publication, immutable source storage and corpus/index releases remain pending.
+- Claim verification checks complete quoted sentences only; general semantic entailment, inferred contradictions and calibrated evidence sufficiency remain pending.
+- Query classification retains every lane by default. Reranking and measured routing still need the A–F dataset/experiment milestone.
+- Representative held-out/adversarial data, per-class metrics, token telemetry, full experiment promotion/rollback and Studio inspection remain pending.
+- Provider cancellation, advanced error-edge behavior, tools/corrective retrieval, experience memory and learning are not enabled. They remain gated by reproducible A–F evidence.
 
-See [experiment artifacts](../experiments/v2-02-fixture-baseline/README.md). The first experimental artifact lacked full snapshots/durable trace files and is retained as an incomplete intermediate result; the later record includes them. Neither record promotes a retrieval strategy.
-
-## Remaining implementation
-
-All local-real retrieval, corpus publication/index lifecycle, shared-index authorization hardening, runtime terminal/loop/deadline changes, claim/conflict verification, real reranking/classification/routing, representative held-out datasets, A–F comparison, Studio inspection extensions and advanced research slices remain pending. Documentation is specified; this list is not implemented by the first experiment slice.
-
-Next execute V2-01 local operations/safety hardening and extend V2-02 metrics/policy cases, then V2-03 real retrieval. Docker/M3-dependent gates require the target environment; independent deterministic work can proceed without pretending those gates passed.
-
-
-## Runtime safety milestone (2026-09-30)
-
-Implemented explicit graph-schema-2 terminal bindings, enforced loop fallback, loop execution before downstream consumers, authorization-denial persistence, and typed evidence/candidate list checks. V1 baseline fingerprint is preserved. See [runtime contract](v2/runtime-contract.md) and ADR-011. Verification: 49 tests passed at this milestone; Docker/live-provider gates remain blocked. Remaining-runtime statements above describe work outside this completed safety subset.
-
-
-## Scope and persistence milestone (2026-09-30)
-
-Implemented mandatory authorized point-ID filtering inside vector search, content/scope-sensitive point identity, empty-scope no-op, fail-closed unexpected results, immutable/idempotent trace writes, JSON UUID path checks and safe error traces. Verification: 57 tests passed. Qdrant request-contract and in-memory shared-index tests pass; live Qdrant/PostgreSQL checks remain unverified. See ADR-012 and the [filter research record](research/qdrant-authorized-point-filter.md).
-
-
-## Retrieval adapter milestone (2026-09-30)
-
-Implemented persistent BM25, exact identifiers/phrases, neutral embedding identity, digest-pinned Ollama batches, embedding-backed Qdrant retrieval, collection-dimension validation, experimental local-real graph/API composition, component config validation and candidate/corpus/embedding trace metadata. All 70 tests pass; local Ollama and Qdrant probes return connection refused. Real semantic quality, model selection, hierarchy, claim checks and A–F acceptance remain outstanding. See [profile](v2/local-real-profile.md).
+See [runtime contracts](v2/runtime-contract.md), [local-real profile](v2/local-real-profile.md), [verification contract](v2/verification-contract.md), and [migration plan](v2/migration-plan.md). Each milestone's evidence is in `experiments/`; none of the adapter tests establish real-model quality or production readiness.
 
 
 ---
@@ -2074,7 +2081,7 @@ Implemented persistent BM25, exact identifiers/phrases, neutral embedding identi
 
 # Experimental local-real profile
 
-Implemented as a composition path, not yet operationally accepted. It uses persistent SQLite BM25, an exact lane, digest-pinned Ollama embeddings, filtered Qdrant search and local generation. The structural lane, classifier, context gate and generation/claim behavior are still being upgraded; this is not the complete first V2 milestone.
+Implemented as a composition path, not yet operationally accepted. It uses persistent SQLite BM25, an exact lane, digest-pinned Ollama embeddings, filtered Qdrant search and local generation. It also includes structural parent context, transparent query classification, whole-block context and conservative quoted-claim verification. Reranking, measured routing and A–F acceptance remain pending.
 
 Set explicit model identities from the installed Ollama service; no downloads or model defaults are selected:
 
@@ -2385,6 +2392,35 @@ Compose hosts Studio, control API, worker, PostgreSQL, MinIO, Qdrant and optiona
 ## Studio
 
 Extend the existing shell after backend instrumentation. Show classification/strategy, lane candidates, fusion/reranking, evidence verification, context decisions, claims/citations/conflicts, iterations, latency/tokens and asset versions. Experiment comparisons show per-case failures and promotion evidence. Disabled/unimplemented controls must say so. Preserve keyboard access, responsive behavior, privacy, cancellation and reviewable AI changes.
+
+
+---
+
+<!-- Source: v2/verification-contract.md -->
+
+# V2 structural context and verification
+
+The experimental local-real graph now runs classification → exact/BM25/dense/structural → RRF → evidence verification → whole-block context → quoted generation → claim/citation verification. Its explicit terminal returns the verified answer.
+
+## Query classification
+
+The rules produce all twelve specified classes, original query, confidence, required capabilities, recommended lanes, reason, classifier version and fallback. Confidence is heuristic telemetry. The initial safe fallback retains all lanes; this is classification, not an accepted adaptive routing policy. Unsupported visual, typed table, relationship or conversational requirements yield an insufficient-evidence result. No-RAG greetings are classified but do not bypass the evidence-first answer policy.
+
+## Structural evidence
+
+`ingest_structural_path` adds parser version, heading level and parent/child identities to the v1 text blocks without changing the v1 parser. Parent traversal is depth bounded, detects cycles and rejects cross-document/revision chains. Only already-authorized parents can be expanded. PDF remains page text; layout/OCR/table/visual extraction is pending.
+
+## Context
+
+The planner retains complete blocks, including warnings and qualifiers, or omits the entire block. Each decision names evidence ID, token estimate and inclusion/quota/budget reason. Input overhead is budgeted separately, output space reserved, and source quotas explicit. The estimator is `utf8-byte-upper-bound@1.0.0`; reported usage is an estimate, not provider tokenizer telemetry. Model-specific accounting remains outstanding.
+
+## Verification
+
+Multiple eligible revisions of one document are unresolved unless request policy has already selected one. Annotated `conflict_group`/`assertion_value` disagreement is visible and blocks generation. This does not infer arbitrary natural-language contradictions.
+
+The generator requests one complete source sentence and citation ID per line. `verbatim-sentence@1.0.0` checks complete normalized sentence equality and the citation's existence in the selected evidence. Changed warnings, fragments, paraphrases and invented IDs fail closed. Empty output and explicit ABSTAIN abstain. Any failed claim clears delivered citations and returns a verification abstention; claim records remain inspectable in the response.
+
+This checks quoted source fidelity, not source truth, relevance completeness, or unrestricted semantic entailment. Do not market it as calibrated general claim support. A later verifier must have separate identity, fixtures and measured acceptance.
 
 
 ---

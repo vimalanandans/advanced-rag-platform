@@ -1,45 +1,25 @@
 # V2 implementation status
 
-Updated 2026-09-30. This is a delivery record, not a claim that the entire V2 platform exists.
+Updated 2026-09-30. Specifications cover the full scope; runtime delivery is incremental and the full V2 platform is not yet accepted.
 
-## Delivered
+## Delivered milestones
 
-- V2-00: assessment, eight-layer architecture, migration/backlog, evaluation, research protocol, 27-group requirements map, ADR-010 and permanent AGENT.md contract.
-- Documentation alignment: authorization before retrieval, M3 target, first-milestone reranker/classifier/claim verification, truthful fixture retrieval wording and regenerated compendium.
-- Initial V2-02: typed dataset/case/strategy/experiment contracts; split and label validation; corpus/graph/model checks; Recall@K, Precision@K, MRR within K and graded nDCG@K; fixture runner; dataset/configuration/graph snapshots; atomic no-overwrite experiment publication; safe per-case failure records and explicit unavailable metrics.
+| Milestone | Implemented scope | Verification |
+| --- | --- | --- |
+| V2-00 | Assessment, architecture, migration/backlog, evaluation/research, 27-group requirements, AGENT.md | Documentation checks |
+| Initial V2-02 | Versioned fixture datasets/strategies/experiments, ranking metrics, split checks, snapshots and immutable experiment publication | 39 tests at milestone; two fixture cases pass |
+| Runtime safety | Explicit V2 terminal bindings, loop fallback/order, denial traces and typed evidence/candidate outputs | 49 tests; v1 fingerprint unchanged |
+| Scope/persistence | Mandatory Qdrant authorized-ID filter, content/scope-sensitive identities, no-overwrite traces and safe errors | 57 tests; provider request doubles, no live database |
+| Retrieval adapters | Persistent BM25, exact lane, pinned Ollama embeddings/generation, Qdrant composition, config schemas and candidate trace metadata | 70 tests; no live semantic-quality claim |
+| Structural/context/verification | Parent links/traversal, twelve query classes, whole-block context/quota decisions, explicit conflicts, complete quoted-sentence citation verification | 89 tests; full graph with provider doubles |
 
-## Evidence
+## Current limits and next steps
 
-| Check | Result |
-| --- | --- |
-| Baseline test suite before changes | 26 passed |
-| Suite after first experiment slice | 39 passed, including 13 new experiment tests |
-| Studio production build | Passed during baseline audit; no Studio files changed |
-| Python compilation | Passed during baseline audit; final verification recorded in the loop artifact |
-| Documentation/reference checks | Passed; seven API routes |
-| Fixture experiment | Two of two regression cases pass; no candidate strategy or semantic-quality improvement claimed |
-| Docker Compose / live providers | Blocked: Docker command unavailable |
-| Ruff | Blocked: module not installed |
+- Ollama and Qdrant readiness probes return connection refused; Docker and Ruff are unavailable. Compose startup, PostgreSQL durability/concurrency and M3 memory/latency acceptance remain unverified.
+- The local-real profile is experimental, using the checked-in corpus. Managed ingestion/publication, immutable source storage and corpus/index releases remain pending.
+- Claim verification checks complete quoted sentences only; general semantic entailment, inferred contradictions and calibrated evidence sufficiency remain pending.
+- Query classification retains every lane by default. Reranking and measured routing still need the A–F dataset/experiment milestone.
+- Representative held-out/adversarial data, per-class metrics, token telemetry, full experiment promotion/rollback and Studio inspection remain pending.
+- Provider cancellation, advanced error-edge behavior, tools/corrective retrieval, experience memory and learning are not enabled. They remain gated by reproducible A–F evidence.
 
-See [experiment artifacts](../../experiments/v2-02-fixture-baseline/README.md). The first experimental artifact lacked full snapshots/durable trace files and is retained as an incomplete intermediate result; the later record includes them. Neither record promotes a retrieval strategy.
-
-## Remaining implementation
-
-All local-real retrieval, corpus publication/index lifecycle, shared-index authorization hardening, runtime terminal/loop/deadline changes, claim/conflict verification, real reranking/classification/routing, representative held-out datasets, A–F comparison, Studio inspection extensions and advanced research slices remain pending. Documentation is specified; this list is not implemented by the first experiment slice.
-
-Next execute V2-01 local operations/safety hardening and extend V2-02 metrics/policy cases, then V2-03 real retrieval. Docker/M3-dependent gates require the target environment; independent deterministic work can proceed without pretending those gates passed.
-
-
-## Runtime safety milestone (2026-09-30)
-
-Implemented explicit graph-schema-2 terminal bindings, enforced loop fallback, loop execution before downstream consumers, authorization-denial persistence, and typed evidence/candidate list checks. V1 baseline fingerprint is preserved. See [runtime contract](runtime-contract.md) and ADR-011. Verification: 49 tests passed at this milestone; Docker/live-provider gates remain blocked. Remaining-runtime statements above describe work outside this completed safety subset.
-
-
-## Scope and persistence milestone (2026-09-30)
-
-Implemented mandatory authorized point-ID filtering inside vector search, content/scope-sensitive point identity, empty-scope no-op, fail-closed unexpected results, immutable/idempotent trace writes, JSON UUID path checks and safe error traces. Verification: 57 tests passed. Qdrant request-contract and in-memory shared-index tests pass; live Qdrant/PostgreSQL checks remain unverified. See ADR-012 and the [filter research record](../research/qdrant-authorized-point-filter.md).
-
-
-## Retrieval adapter milestone (2026-09-30)
-
-Implemented persistent BM25, exact identifiers/phrases, neutral embedding identity, digest-pinned Ollama batches, embedding-backed Qdrant retrieval, collection-dimension validation, experimental local-real graph/API composition, component config validation and candidate/corpus/embedding trace metadata. All 70 tests pass; local Ollama and Qdrant probes return connection refused. Real semantic quality, model selection, hierarchy, claim checks and A–F acceptance remain outstanding. See [profile](local-real-profile.md).
+See [runtime contracts](runtime-contract.md), [local-real profile](local-real-profile.md), [verification contract](verification-contract.md), and [migration plan](migration-plan.md). Each milestone's evidence is in `experiments/`; none of the adapter tests establish real-model quality or production readiness.

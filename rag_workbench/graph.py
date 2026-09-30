@@ -158,7 +158,7 @@ def _validate_terminal_outputs(pipeline: Pipeline, manifests: dict) -> None:
             raise GraphValidationError("explicit terminal outputs require graph schema 2.0.0")
         return
     required = {"answer": "answer", "citations": "evidence_list", "abstained": "bool"}
-    allowed = {**required, "context": "context"}
+    allowed = {**required, "context": "context", "claims": "claim_support"}
     if not set(required) <= set(bindings) or not set(bindings) <= set(allowed):
         raise GraphValidationError("v2 terminal outputs require answer, citations and abstained; context is optional")
     for name, binding in bindings.items():

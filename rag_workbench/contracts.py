@@ -9,6 +9,33 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+QueryClass = Literal[
+    "exact_identifier", "exact_phrase", "semantic", "comparison", "procedure",
+    "table", "visual", "temporal", "multi_hop", "relationship", "conversational",
+    "no_rag_required",
+]
+
+
+class QueryDecision(BaseModel):
+    original_query: str
+    query_class: QueryClass
+    confidence: float = Field(ge=0, le=1)
+    required_capabilities: list[str]
+    recommended_lanes: list[str]
+    reason: str
+    fallback: str = "all_available_lanes"
+    classifier_version: str = "rules@1.0.0"
+
+
+class ClaimSupport(BaseModel):
+    claim: str
+    evidence_ids: list[str]
+    support: Literal["supported", "partial", "unsupported", "conflicting"]
+    confidence: float = Field(ge=0, le=1)
+    verifier: str = "verbatim-sentence@1.0.0"
+    action: Literal["keep", "qualify", "remove", "abstain"]
+
+
 class EdgeKind(str, Enum):
     DATA = "data"
     CONTROL = "control"
@@ -141,6 +168,8 @@ class TokenUsage(BaseModel):
 
 
 class ContextPlan(BaseModel):
+    decisions: list[dict[str, Any]] = Field(default_factory=list)
+    estimator: str = "whitespace-fixture@1.0.0"
     included: list[str] = Field(default_factory=list)
     omitted: list[str] = Field(default_factory=list)
     truncated: list[str] = Field(default_factory=list)
@@ -177,9 +206,11 @@ class RunManifest(BaseModel):
     loop_outcomes: list[dict[str, Any]] = Field(default_factory=list)
     embedding_identity: dict[str, Any] = Field(default_factory=dict)
     retrieval_candidates: list[dict[str, Any]] = Field(default_factory=list)
+    decisions: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class RunResult(BaseModel):
+    claims: list[ClaimSupport] = Field(default_factory=list)
     manifest: RunManifest
     answer: str
     citations: list[Evidence] = Field(default_factory=list)

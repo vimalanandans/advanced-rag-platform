@@ -2,8 +2,8 @@ pipeline:
   id: local-real-baseline
   version: 2.0.0
   tenant_id: local
-  description: Experimental local-real retrieval with exact, persistent BM25, semantic
-    embeddings and structural fixture
+  description: Experimental local-real retrieval with structural context and conservative
+    claim verification
   budgets:
     max_total_tokens: 30000
     max_context_tokens: 1200
@@ -12,11 +12,11 @@ pipeline:
     max_iterations: 2
   nodes:
   - id: classify
-    component: query.classifier@1.0.0
+    component: query.classifier@2.0.0
     inputs:
       query: $query
     outputs:
-      route: string
+      decision: query_decision
   - id: bm25
     component: retrieval.bm25@2.0.0
     inputs:
@@ -31,8 +31,8 @@ pipeline:
       evidence: $evidence
     outputs:
       candidates: candidates
-  - id: vectorless
-    component: retrieval.vectorless@1.0.0
+  - id: structural
+    component: retrieval.structural@2.0.0
     inputs:
       query: $query
       evidence: $evidence
@@ -44,24 +44,28 @@ pipeline:
       candidate_lists:
       - bm25.candidates
       - dense.candidates
-      - vectorless.candidates
+      - structural.candidates
       - exact.candidates
     outputs:
       candidates: candidates
   - id: verify
-    component: verification.evidence@1.0.0
+    component: verification.evidence@2.0.0
     inputs:
       candidates: fuse.candidates
+      decision: classify.decision
     outputs:
       sufficient: bool
+      conflicts: string_list
+      limitations: string_list
   - id: context
-    component: context.evidence_packer@1.0.0
+    component: context.evidence_packer@2.0.0
     inputs:
       candidates: fuse.candidates
+      question: $query
     outputs:
       context: context
   - id: generate
-    component: generation.local@1.0.0
+    component: generation.local@2.0.0
     inputs:
       question: $query
       context: context.context
@@ -78,13 +82,24 @@ pipeline:
       evidence: $evidence
     outputs:
       candidates: candidates
+  - id: claims
+    component: verification.claims@1.0.0
+    inputs:
+      answer: generate.answer
+      citations: generate.citations
+      abstained: generate.abstained
+    outputs:
+      verified_answer: answer
+      citations: evidence_list
+      abstained: bool
+      claims: claim_support
   edges:
   - classify -> bm25
   - classify -> dense
-  - classify -> vectorless
+  - classify -> structural
   - bm25 -> fuse
   - dense -> fuse
-  - vectorless -> fuse
+  - structural -> fuse
   - fuse -> verify
   - fuse -> context
   - verify -> context
@@ -93,9 +108,12 @@ pipeline:
   - verify -> generate
   - classify -> exact
   - exact -> fuse
+  - generate -> claims
+  - classify -> verify
   graph_schema_version: 2.0.0
   outputs:
-    answer: generate.answer
-    citations: generate.citations
-    abstained: generate.abstained
+    answer: claims.verified_answer
+    citations: claims.citations
+    abstained: claims.abstained
+    claims: claims.claims
     context: context.context

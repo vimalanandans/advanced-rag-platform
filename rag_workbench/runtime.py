@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from rag_workbench.contracts import Budget, ContextPlan, Evidence, NodeExecution, Pipeline, RequestContext, RetrievalCandidate, RunManifest, RunResult, TokenUsage
+from rag_workbench.contracts import Budget, ClaimSupport, ContextPlan, Evidence, NodeExecution, Pipeline, QueryDecision, RequestContext, RetrievalCandidate, RunManifest, RunResult, TokenUsage
 from rag_workbench.graph import ExecutionPlan, compile_pipeline
 from rag_workbench.observability import LocalTraceStore, TraceStore
 from rag_workbench.providers import LocalProviderProfile, OllamaModelProvider, QdrantVectorIndex, provider_profile_from_environment
@@ -37,6 +37,7 @@ class ExecutionContext:
     loop_outcomes: list[dict[str, Any]] = field(default_factory=list)
     forced_abstention: bool = False
     retrieval_candidates: list[dict[str, Any]] = field(default_factory=list)
+    decisions: list[dict[str, Any]] = field(default_factory=list)
 
     def assert_within_deadline(self) -> None:
         if (time.monotonic() - self.started_at) * 1000 > self.budget.max_latency_ms:
@@ -53,6 +54,12 @@ class ExecutionContext:
         self.usage.output_tokens += amount
         if self.usage.output_tokens > self.budget.max_output_tokens:
             raise BudgetExceeded("output token budget exceeded")
+        self._assert_total()
+
+    def consume_input(self, amount: int) -> None:
+        if amount < 0:
+            raise ValueError("input accounting cannot be negative")
+        self.usage.input_tokens += amount
         self._assert_total()
 
     def consume_retrieval_reasoning(self, amount: int) -> None:
@@ -126,6 +133,7 @@ class WorkbenchRuntime:
                 answer=generated.get("answer", "I cannot answer from the approved evidence available."),
                 citations=generated.get("citations", []), abstained=generated.get("abstained", True),
                 context=context_plan,
+                claims=generated.get("claims", []),
             )
         except Exception as error:
             failure = error
@@ -146,6 +154,14 @@ class WorkbenchRuntime:
             for port, kind in node.outputs.items():
                 if kind == "candidates":
                     context.retrieval_candidates.append({"node_id": node.id, "iteration": iteration, "candidates": [{"evidence_id": item.evidence.id, "revision": item.evidence.revision, "lane": item.lane, "rank": item.rank, "score": item.score} for item in outputs[port]]})
+                elif kind == "query_decision":
+                    context.decisions.append({"node_id": node.id, "decision": outputs[port].model_dump(exclude={"original_query"})})
+                elif kind == "context":
+                    context.decisions.append({"node_id": node.id, "context": outputs[port].model_dump(mode="json")})
+                elif kind == "claim_support":
+                    context.decisions.append({"node_id": node.id, "claims": [claim.model_dump(exclude={"claim"}) for claim in outputs[port]]})
+                elif port in {"conflicts", "limitations"}:
+                    context.decisions.append({"node_id": node.id, port: outputs[port]})
             self._account_outputs(outputs, context)
             context.assert_within_deadline()
             state[node.id] = outputs
@@ -156,12 +172,12 @@ class WorkbenchRuntime:
 
     @staticmethod
     def _validate_output_values(contract: dict[str, str], outputs: dict[str, Any]) -> None:
-        expected_python_types = {"string": str, "answer": str, "bool": bool, "candidates": list, "evidence_list": list, "context": ContextPlan}
+        expected_python_types = {"string": str, "answer": str, "bool": bool, "candidates": list, "evidence_list": list, "context": ContextPlan, "query_decision": QueryDecision, "claim_support": list, "string_list": list}
         for name, type_name in contract.items():
             expected = expected_python_types.get(type_name)
             if expected and not isinstance(outputs[name], expected):
                 raise TypeError(f"component output {name} must be {type_name}")
-            element_type = {"candidates": RetrievalCandidate, "evidence_list": Evidence}.get(type_name)
+            element_type = {"candidates": RetrievalCandidate, "evidence_list": Evidence, "claim_support": ClaimSupport, "string_list": str}.get(type_name)
             if element_type and any(not isinstance(item, element_type) for item in outputs[name]):
                 raise TypeError(f"component output {name} contains invalid {type_name} elements")
 
@@ -171,6 +187,7 @@ class WorkbenchRuntime:
         context_value = outputs.get("context")
         if isinstance(context_value, ContextPlan):
             context.consume_context(context_value.token_usage.context_tokens)
+            context.consume_input(max(0, context_value.token_usage.input_tokens - context_value.token_usage.context_tokens))
         answer = outputs.get("answer")
         if isinstance(answer, str):
             context.consume_output(len(answer.split()))
@@ -261,6 +278,7 @@ class WorkbenchRuntime:
             loop_outcomes=context.loop_outcomes,
             embedding_identity=self.embedding_identity,
             retrieval_candidates=context.retrieval_candidates,
+            decisions=context.decisions,
         )
 
 

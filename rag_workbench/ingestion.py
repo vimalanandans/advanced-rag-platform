@@ -44,3 +44,29 @@ def _markdown_blocks(text: str) -> list[tuple[str, str]]:
     if buffer:
         sections.append((heading, "\n".join(buffer)))
     return [(f"{locator}:{index}", block) for index, (locator, block) in enumerate(sections, start=1)]
+
+
+def ingest_structural_path(path: Path, corpus_id: str = "local-demo") -> list[Evidence]:
+    """Versioned structural view; keep the v1 fixture parser behavior unchanged."""
+    import re
+    evidence = ingest_path(path, corpus_id)
+    ancestors: list[tuple[int, Evidence]] = []
+    result = []
+    for item in evidence:
+        metadata = {**item.metadata, "parser_version": "structural-text@2.0.0", "child_ids": []}
+        match = re.match(r"^(#{1,6})\s+", item.content)
+        if match and path.suffix.lower() != ".pdf":
+            level = len(match.group(1))
+            while ancestors and ancestors[-1][0] >= level:
+                ancestors.pop()
+            metadata["heading_level"] = level
+            if ancestors:
+                parent = ancestors[-1][1]
+                metadata["parent_id"] = parent.id
+                parent.metadata["child_ids"].append(item.id)
+            item = item.model_copy(update={"metadata": metadata})
+            ancestors.append((level, item))
+        else:
+            item = item.model_copy(update={"metadata": metadata})
+        result.append(item)
+    return result

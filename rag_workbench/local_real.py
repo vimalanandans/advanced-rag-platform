@@ -7,7 +7,7 @@ from pathlib import Path
 
 from rag_workbench.contracts import CapabilityManifest, ComponentManifest
 from rag_workbench.embeddings import EmbeddingIdentity, OllamaEmbeddingProvider
-from rag_workbench.ingestion import ingest_path
+from rag_workbench.ingestion import ingest_structural_path
 from rag_workbench.lexical import ExactRetriever, PersistentBM25Retriever
 from rag_workbench.observability import TraceStore
 from rag_workbench.providers import OllamaModelProvider, QdrantVectorIndex
@@ -37,7 +37,9 @@ def local_real_runtime(*, trace_store: TraceStore | None = None, environ: dict[s
             input_types={"query": "string", "evidence": "evidence_list"}, output_types={"candidates": "candidates"},
             errors=["index_unavailable", "invalid_snapshot"], concurrency="parallel-safe", telemetry_events=["component.completed", "component.failed"],
         ), lambda inputs, _context, config, selected=retriever: {"candidates": selected.retrieve(inputs["query"], inputs["evidence"], config.get("limit", 5))})
+    from rag_workbench.v2_components import register_v2_components
+    register_v2_components(registry, OllamaModelProvider(endpoint, values["RAG_WORKBENCH_OLLAMA_MODEL"], revision=values["RAG_WORKBENCH_GENERATION_REVISION"]))
     runtime = WorkbenchRuntime(registry=registry, trace_store=trace_store, model_version=f"ollama:{values['RAG_WORKBENCH_OLLAMA_MODEL']}@{values['RAG_WORKBENCH_GENERATION_REVISION']}",
                                embedding_identity=identity.model_dump(), index_revisions={"lexical": "bm25@2.0.0/ascii-stopwords-v1", "vector_collection": collection})
-    runtime.set_evidence(ingest_path(Path(__file__).parent.parent / "data/fixtures/rag_basics.md"))
+    runtime.set_evidence(ingest_structural_path(Path(__file__).parent.parent / "data/fixtures/rag_basics.md"))
     return runtime
