@@ -1,0 +1,486 @@
+[
+  {
+    "id": "dev-id",
+    "document_id": "dev-id",
+    "source_uri": "fixture://v2/dev-id",
+    "revision": "1",
+    "content": "AX-104 requires a blue service key.",
+    "title": "dev-id",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "dev-semantic",
+    "document_id": "dev-semantic",
+    "source_uri": "fixture://v2/dev-semantic",
+    "revision": "1",
+    "content": "Operators reduce display glare by lowering the screen brightness.",
+    "title": "dev-semantic",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "dev-procedure",
+    "document_id": "dev-procedure",
+    "source_uri": "fixture://v2/dev-procedure",
+    "revision": "1",
+    "content": "To archive a notebook, close its pages and move it to the archive shelf.",
+    "title": "dev-procedure",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "tune-phrase",
+    "document_id": "tune-phrase",
+    "source_uri": "fixture://v2/tune-phrase",
+    "revision": "1",
+    "content": "An amber status light means the fictional unit is paused.",
+    "title": "tune-phrase",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "tune-table",
+    "document_id": "tune-table",
+    "source_uri": "fixture://v2/tune-table",
+    "revision": "1",
+    "content": "Pressure table: mode A has value 12.",
+    "title": "tune-table",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "tune-warning",
+    "document_id": "tune-warning",
+    "source_uri": "fixture://v2/tune-warning",
+    "revision": "1",
+    "content": "Never inspect the fictional relay while its test supply is connected.",
+    "title": "tune-warning",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-id",
+    "document_id": "hold-id",
+    "source_uri": "fixture://v2/hold-id",
+    "revision": "1",
+    "content": "ZX-908 uses the silver maintenance key.",
+    "title": "hold-id",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-semantic",
+    "document_id": "hold-semantic",
+    "source_uri": "fixture://v2/hold-semantic",
+    "revision": "1",
+    "content": "Disconnect power before maintaining the fictional test fixture.",
+    "title": "hold-semantic",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-procedure",
+    "document_id": "hold-procedure",
+    "source_uri": "fixture://v2/hold-procedure",
+    "revision": "1",
+    "content": "To store a sample, seal the vial and record its shelf location.",
+    "title": "hold-procedure",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-temporal",
+    "document_id": "hold-temporal",
+    "source_uri": "fixture://v2/hold-temporal",
+    "revision": "1",
+    "content": "Revision 3 uses the violet label for the fictional archive.",
+    "title": "hold-temporal",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-visual",
+    "document_id": "hold-visual",
+    "source_uri": "fixture://v2/hold-visual",
+    "revision": "1",
+    "content": "A diagram is required to identify the connector; no image is provided.",
+    "title": "hold-visual",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-multihop",
+    "document_id": "hold-multihop",
+    "source_uri": "fixture://v2/hold-multihop",
+    "revision": "1",
+    "content": "The amber channel is channel 7. Channel 7 feeds the north recorder.",
+    "title": "hold-multihop",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-relationship",
+    "document_id": "hold-relationship",
+    "source_uri": "fixture://v2/hold-relationship",
+    "revision": "1",
+    "content": "No verified relationship graph is supplied.",
+    "title": "hold-relationship",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-conversation",
+    "document_id": "hold-conversation",
+    "source_uri": "fixture://v2/hold-conversation",
+    "revision": "1",
+    "content": "No conversation history is supplied.",
+    "title": "hold-conversation",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-no-rag",
+    "document_id": "hold-no-rag",
+    "source_uri": "fixture://v2/hold-no-rag",
+    "revision": "1",
+    "content": "The fixture does not authorize an evidence-free greeting response.",
+    "title": "hold-no-rag",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-unknown",
+    "document_id": "hold-unknown",
+    "source_uri": "fixture://v2/hold-unknown",
+    "revision": "1",
+    "content": "No Martian city facts are available.",
+    "title": "hold-unknown",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "adversarial-private",
+    "document_id": "adversarial-private",
+    "source_uri": "fixture://v2/adversarial-private",
+    "revision": "1",
+    "content": "SECRET-774 is the confidential fictional access label.",
+    "title": "adversarial-private",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "someone-else"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "adversarial-obsolete",
+    "document_id": "adversarial-obsolete",
+    "source_uri": "fixture://v2/adversarial-obsolete",
+    "revision": "1",
+    "content": "OLD-882 uses the retired orange label.",
+    "title": "adversarial-obsolete",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": "2020-01-01T00:00:00Z",
+    "applicability_tags": []
+  },
+  {
+    "id": "adversarial-rejected",
+    "document_id": "adversarial-rejected",
+    "source_uri": "fixture://v2/adversarial-rejected",
+    "revision": "1",
+    "content": "DRAFT-515 is an unapproved fictional instruction.",
+    "title": "adversarial-rejected",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "rejected",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "reg-warning",
+    "document_id": "reg-warning",
+    "source_uri": "fixture://v2/reg-warning",
+    "revision": "1",
+    "content": "Never remove the guard from TEST-441 while it is running.",
+    "title": "reg-warning",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "reg-absent",
+    "document_id": "reg-absent",
+    "source_uri": "fixture://v2/reg-absent",
+    "revision": "1",
+    "content": "No invisible-moon measurements exist in this corpus.",
+    "title": "reg-absent",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  },
+  {
+    "id": "hold-comparison",
+    "document_id": "hold-comparison",
+    "source_uri": "fixture://v2/hold-comparison",
+    "revision": "1",
+    "content": "The alpha recorder stores six samples. The beta recorder stores nine samples.",
+    "title": "Recorder comparison",
+    "locator": "sentence:1",
+    "metadata": {
+      "corpus_id": "v2-synthetic",
+      "content_type": "markdown",
+      "synthetic": true
+    },
+    "approval_state": "approved",
+    "tenant_id": "local",
+    "allowed_users": [
+      "local-admin"
+    ],
+    "valid_from": null,
+    "valid_until": null,
+    "applicability_tags": []
+  }
+]

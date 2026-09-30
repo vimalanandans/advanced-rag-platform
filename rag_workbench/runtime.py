@@ -89,6 +89,7 @@ class WorkbenchRuntime:
         self.evidence: list[Evidence] = []
         self.embedding_identity = embedding_identity or {}
         self.index_revisions = index_revisions or {}
+        self.asset_versions: dict[str, str] = {}
 
     def set_evidence(self, evidence: list[Evidence]) -> None:
         self.evidence = evidence
@@ -277,6 +278,7 @@ class WorkbenchRuntime:
             token_usage=context.usage, node_executions=executions, status=status, error=error,
             loop_outcomes=context.loop_outcomes,
             embedding_identity=self.embedding_identity,
+            asset_versions=self.asset_versions,
             retrieval_candidates=context.retrieval_candidates,
             decisions=context.decisions,
         )

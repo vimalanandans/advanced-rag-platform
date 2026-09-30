@@ -39,7 +39,32 @@ def local_real_runtime(*, trace_store: TraceStore | None = None, environ: dict[s
         ), lambda inputs, _context, config, selected=retriever: {"candidates": selected.retrieve(inputs["query"], inputs["evidence"], config.get("limit", 5))})
     from rag_workbench.v2_components import register_v2_components
     register_v2_components(registry, OllamaModelProvider(endpoint, values["RAG_WORKBENCH_OLLAMA_MODEL"], revision=values["RAG_WORKBENCH_GENERATION_REVISION"]))
+    from rag_workbench.intelligence import StructuralRetriever
+    from rag_workbench.reranking import LocalCrossEncoderReranker
+    reranker = None
+    if values.get("RAG_WORKBENCH_RERANKER_PATH"):
+        reranker = LocalCrossEncoderReranker(Path(values["RAG_WORKBENCH_RERANKER_PATH"]), values.get("RAG_WORKBENCH_RERANKER_REVISION", ""), device=values.get("RAG_WORKBENCH_RERANKER_DEVICE", "cpu"))
+    def rank(inputs, _context, config):
+        if reranker is None:
+            raise ValueError("reranker model is not configured")
+        return {"candidates": reranker.rerank(inputs["query"], inputs["candidates"], config.get("limit", 8))}
+    registry.register(ComponentManifest(
+        id="ranking.local", version="1.0.0", category="ranking", description="Pinned local cross-encoder",
+        capabilities=CapabilityManifest(category="ranking", cloud_supported=False),
+        config_schema={"type": "object", "properties": {"limit": {"type": "integer", "minimum": 1, "maximum": 100}}, "additionalProperties": False},
+        input_types={"query": "string", "candidates": "candidates"}, output_types={"candidates": "candidates"},
+    ), rank)
+    for lane, component, retriever in (("bm25", "retrieval.bm25@2.0.0", lexical), ("dense", "retrieval.dense@1.0.0", dense), ("structural", "retrieval.structural@2.0.0", StructuralRetriever())):
+        base = registry.get(component)
+        def routed(inputs, _context, config, selected=retriever, selected_lane=lane):
+            if selected_lane not in inputs["decision"].recommended_lanes:
+                return {"candidates": []}
+            return {"candidates": selected.retrieve(inputs["query"], inputs["evidence"], config.get("limit", 5))}
+        registry.register(base.model_copy(update={"id": "routed." + base.id, "input_types": {**base.input_types, "decision": "query_decision"}}), routed)
     runtime = WorkbenchRuntime(registry=registry, trace_store=trace_store, model_version=f"ollama:{values['RAG_WORKBENCH_OLLAMA_MODEL']}@{values['RAG_WORKBENCH_GENERATION_REVISION']}",
                                embedding_identity=identity.model_dump(), index_revisions={"lexical": "bm25@2.0.0/ascii-stopwords-v1", "vector_collection": collection})
+    runtime.asset_versions = {"generation": runtime.model_version, "embedding": f"{identity.model_id}@{identity.revision}"}
+    if reranker is not None:
+        runtime.asset_versions["reranker"] = reranker.identity
     runtime.set_evidence(ingest_structural_path(Path(__file__).parent.parent / "data/fixtures/rag_basics.md"))
     return runtime

@@ -12,14 +12,15 @@ Updated 2026-09-30. Specifications cover the full scope; runtime delivery is inc
 | Scope/persistence | Mandatory Qdrant authorized-ID filter, content/scope-sensitive identities, no-overwrite traces and safe errors | 57 tests; provider request doubles, no live database |
 | Retrieval adapters | Persistent BM25, exact lane, pinned Ollama embeddings/generation, Qdrant composition, config schemas and candidate trace metadata | 70 tests; no live semantic-quality claim |
 | Structural/context/verification | Parent links/traversal, twelve query classes, whole-block context/quota decisions, explicit conflicts, complete quoted-sentence citation verification | 89 tests; full graph with provider doubles |
+| Strategy experiment runtime | Local pinned reranker, explicit A–F graphs, experimental F routing, per-process comparison command, policy narrowing, stage metrics and 22 synthetic cases | 105 tests; real comparison blocked by model/service prerequisites |
 
 ## Current limits and next steps
 
 - Ollama and Qdrant readiness probes return connection refused; Docker and Ruff are unavailable. Compose startup, PostgreSQL durability/concurrency and M3 memory/latency acceptance remain unverified.
 - The local-real profile is experimental, using the checked-in corpus. Managed ingestion/publication, immutable source storage and corpus/index releases remain pending.
 - Claim verification checks complete quoted sentences only; general semantic entailment, inferred contradictions and calibrated evidence sufficiency remain pending.
-- Query classification retains every lane by default. Reranking and measured routing still need the A–F dataset/experiment milestone.
-- Representative held-out/adversarial data, per-class metrics, token telemetry, full experiment promotion/rollback and Studio inspection remain pending.
+- Query classification retains every lane by default. Reranking and F routing are executable experimental options; no real A–F comparison or promotion has passed.
+- Representative domain held-out/adversarial data, calibrated per-class metrics, token telemetry, full experiment promotion/rollback and Studio inspection remain pending.
 - Provider cancellation, advanced error-edge behavior, tools/corrective retrieval, experience memory and learning are not enabled. They remain gated by reproducible A–F evidence.
 
 See [runtime contracts](runtime-contract.md), [local-real profile](local-real-profile.md), [verification contract](verification-contract.md), and [migration plan](migration-plan.md). Each milestone's evidence is in `experiments/`; none of the adapter tests establish real-model quality or production readiness.

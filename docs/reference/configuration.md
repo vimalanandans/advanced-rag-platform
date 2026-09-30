@@ -65,3 +65,6 @@ docker compose up --build
 `RAG_WORKBENCH_OLLAMA_MODEL` and `RAG_WORKBENCH_GENERATION_REVISION`. Revisions are installed model digests.
 The profile uses the existing local URLs/storage settings and defaults its Qdrant collection to `rag_evidence_v2`.
 See [local-real instructions and limitations](../v2/local-real-profile.md). These settings do not prove provider readiness.
+
+
+For experiment arms E/F, set `RAG_WORKBENCH_RERANKER_PATH` and `RAG_WORKBENCH_RERANKER_REVISION` to an installed local safetensors model directory and its content fingerprint. `RAG_WORKBENCH_RERANKER_DEVICE` accepts `cpu` or `mps`. These are optional for other arms. See [strategy comparisons](../v2/strategy-comparison.md).

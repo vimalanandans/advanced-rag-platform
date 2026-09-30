@@ -19,38 +19,41 @@ This file combines the Markdown documentation under `docs/` for convenient readi
 13. `adr/012-scoped-vector-search-and-immutable-traces.md`
 14. `adr/013-versioned-local-real-retrieval.md`
 15. `adr/014-conservative-context-and-claim-verification.md`
-16. `adr/template.md`
-17. `api/README.md`
-18. `architecture/README.md`
-19. `architecture/system.md`
-20. `data-engineer-guide/README.md`
-21. `definition-of-done/README.md`
-22. `design-principles/README.md`
-23. `developer-guide/README.md`
-24. `evaluation/README.md`
-25. `observability/README.md`
-26. `operations/README.md`
-27. `product/roadmap-and-specification.md`
-28. `product-ux/README.md`
-29. `product-ux/ai-native-workspace-guide.md`
-30. `reference/configuration.md`
-31. `research/README.md`
-32. `research/local-retrieval-baseline.md`
-33. `research/qdrant-authorized-point-filter.md`
-34. `security/README.md`
-35. `testing/README.md`
-36. `user-guide/first-local-run.md`
-37. `v2/current-system-assessment.md`
-38. `v2/evaluation-plan.md`
-39. `v2/implementation-status.md`
-40. `v2/local-real-profile.md`
-41. `v2/migration-plan.md`
-42. `v2/requirements.md`
-43. `v2/research-plan.md`
-44. `v2/runtime-contract.md`
-45. `v2/target-architecture.md`
-46. `v2/verification-contract.md`
-47. `validation/README.md`
+16. `adr/015-controlled-strategy-comparisons.md`
+17. `adr/template.md`
+18. `api/README.md`
+19. `architecture/README.md`
+20. `architecture/system.md`
+21. `data-engineer-guide/README.md`
+22. `definition-of-done/README.md`
+23. `design-principles/README.md`
+24. `developer-guide/README.md`
+25. `evaluation/README.md`
+26. `observability/README.md`
+27. `operations/README.md`
+28. `product/roadmap-and-specification.md`
+29. `product-ux/README.md`
+30. `product-ux/ai-native-workspace-guide.md`
+31. `reference/configuration.md`
+32. `research/README.md`
+33. `research/local-reranking.md`
+34. `research/local-retrieval-baseline.md`
+35. `research/qdrant-authorized-point-filter.md`
+36. `security/README.md`
+37. `testing/README.md`
+38. `user-guide/first-local-run.md`
+39. `v2/current-system-assessment.md`
+40. `v2/evaluation-plan.md`
+41. `v2/implementation-status.md`
+42. `v2/local-real-profile.md`
+43. `v2/migration-plan.md`
+44. `v2/requirements.md`
+45. `v2/research-plan.md`
+46. `v2/runtime-contract.md`
+47. `v2/strategy-comparison.md`
+48. `v2/target-architecture.md`
+49. `v2/verification-contract.md`
+50. `validation/README.md`
 
 
 ---
@@ -418,6 +421,29 @@ Pack whole evidence blocks with byte-based conservative token estimates, explici
 ## Consequences
 
 This is extractive source-fidelity checking, not general semantic entailment or a guarantee that the source is true. Paraphrases, malformed citations and changed qualifiers abstain. Structural PDF hierarchy and inferred semantic contradictions remain unimplemented. Routing does not suppress lanes until measured comparisons justify it. Trace decisions omit raw query and claim text; API results expose authorized claim details. No general evidence-sufficiency quality threshold is claimed.
+
+
+---
+
+<!-- Source: adr/015-controlled-strategy-comparisons.md -->
+
+# ADR-015: Explicit strategy arms and isolated experiment processes
+
+## Status
+
+Accepted for experiment infrastructure; retrieval strategies remain experimental.
+
+## Context
+
+The first V2 milestone requires controlled A–F comparisons and measured reranking/routing. One large pipeline cannot isolate their effects, and peak process memory is misleading if all models/arms share one process.
+
+## Decision
+
+Generate six versioned graph variants with explicit lane, ranking and decision dependencies. Use a local pinned CrossEncoder behind a neutral reranker interface. Retain all lanes in the default graph; F alone uses the declared experimental identifier/phrase policy. Run all-arm comparisons in separate processes, persisting preflight/execution failures as well as results. Include stage rankings, class coverage, abstention and required-claim checks, and never auto-promote a strategy.
+
+## Consequences
+
+A model, its license and M3 envelope still need operator configuration and measured acceptance. Synthetic fixtures validate control flow but cannot justify a quality claim. Unknown policy constraints fail rather than disappear. The comparison runner is an engineering command, not a new API/job service. Advanced corrective/planner behavior remains blocked by the real A–F acceptance gate.
 
 
 ---
@@ -1730,6 +1756,9 @@ The profile uses the existing local URLs/storage settings and defaults its Qdran
 See [local-real instructions and limitations](v2/local-real-profile.md). These settings do not prove provider readiness.
 
 
+For experiment arms E/F, set `RAG_WORKBENCH_RERANKER_PATH` and `RAG_WORKBENCH_RERANKER_REVISION` to an installed local safetensors model directory and its content fingerprint. `RAG_WORKBENCH_RERANKER_DEVICE` accepts `cpu` or `mps`. These are optional for other arms. See [strategy comparisons](v2/strategy-comparison.md).
+
+
 ---
 
 <!-- Source: research/README.md -->
@@ -1737,6 +1766,21 @@ See [local-real instructions and limitations](v2/local-real-profile.md). These s
 # Research records
 
 Follow the [V2 research plan](v2/research-plan.md). Add a dated record per technique before implementation. A record must identify primary sources, their limitations, license, hardware assumptions, contract mapping and a reproducible experiment. This directory currently contains the protocol only; no literature or model benchmark is represented as completed.
+
+
+---
+
+<!-- Source: research/local-reranking.md -->
+
+# Local reranker adapter research
+
+Reviewed 2026-09-30. Primary source: [Sentence Transformers CrossEncoder API](https://www.sbert.net/docs/package_reference/cross_encoder/model.html).
+
+The adapter uses local-files-only loading with remote code disabled and safetensors required. It scores query/passage pairs, preserves evidence identity and ranks only the authorized candidates supplied by the graph. A content fingerprint pins the complete local model directory at load time. Token-length checks reject inputs that would be silently truncated; candidate and batch limits are explicit.
+
+No model is selected, downloaded or redistributed. License, M3 memory use, CPU/MPS feasibility and ranking gain require a separately supplied local model and benchmark. Unit doubles test sorting, evidence identity, input bounds and model drift. They do not prove ranking improvement. The optional `local-real` dependency group installs Sentence Transformers when requested by an operator.
+
+Compare D and E on the same frozen data before promotion. F applies an explicit experimental lexical-only routing rule for identifier/phrase queries; the default graph retains all lanes. Neither optimization is accepted on source claims or synthetic tests alone.
 
 
 ---
@@ -2062,14 +2106,15 @@ Updated 2026-09-30. Specifications cover the full scope; runtime delivery is inc
 | Scope/persistence | Mandatory Qdrant authorized-ID filter, content/scope-sensitive identities, no-overwrite traces and safe errors | 57 tests; provider request doubles, no live database |
 | Retrieval adapters | Persistent BM25, exact lane, pinned Ollama embeddings/generation, Qdrant composition, config schemas and candidate trace metadata | 70 tests; no live semantic-quality claim |
 | Structural/context/verification | Parent links/traversal, twelve query classes, whole-block context/quota decisions, explicit conflicts, complete quoted-sentence citation verification | 89 tests; full graph with provider doubles |
+| Strategy experiment runtime | Local pinned reranker, explicit A–F graphs, experimental F routing, per-process comparison command, policy narrowing, stage metrics and 22 synthetic cases | 105 tests; real comparison blocked by model/service prerequisites |
 
 ## Current limits and next steps
 
 - Ollama and Qdrant readiness probes return connection refused; Docker and Ruff are unavailable. Compose startup, PostgreSQL durability/concurrency and M3 memory/latency acceptance remain unverified.
 - The local-real profile is experimental, using the checked-in corpus. Managed ingestion/publication, immutable source storage and corpus/index releases remain pending.
 - Claim verification checks complete quoted sentences only; general semantic entailment, inferred contradictions and calibrated evidence sufficiency remain pending.
-- Query classification retains every lane by default. Reranking and measured routing still need the A–F dataset/experiment milestone.
-- Representative held-out/adversarial data, per-class metrics, token telemetry, full experiment promotion/rollback and Studio inspection remain pending.
+- Query classification retains every lane by default. Reranking and F routing are executable experimental options; no real A–F comparison or promotion has passed.
+- Representative domain held-out/adversarial data, calibrated per-class metrics, token telemetry, full experiment promotion/rollback and Studio inspection remain pending.
 - Provider cancellation, advanced error-edge behavior, tools/corrective retrieval, experience memory and learning are not enabled. They remain gated by reproducible A–F evidence.
 
 See [runtime contracts](v2/runtime-contract.md), [local-real profile](v2/local-real-profile.md), [verification contract](v2/verification-contract.md), and [migration plan](v2/migration-plan.md). Each milestone's evidence is in `experiments/`; none of the adapter tests establish real-model quality or production readiness.
@@ -2292,6 +2337,45 @@ Loops execute their declared node order, including conditional skips, after init
 Authorization denials now persist a safe failed run with no node executions. Deadline checks precede the completed event, preventing a node from being marked both completed and failed for a single deadline overrun. Evidence/candidate port lists validate their element types.
 
 Verified by `tests/test_runtime_v2.py` and the complete deterministic regression suite. This does not yet provide provider cancellation, error-edge recovery, config-schema enforcement or a corrective strategy.
+
+
+---
+
+<!-- Source: v2/strategy-comparison.md -->
+
+# A–F strategy comparison runtime
+
+The graph factory implements A (BM25), B (dense), C (BM25+dense), D (C+structural), E (D+reranker), F (E+declared identifier/phrase routing). Fusion, verification, context and generation remain explicit graph nodes. Every arm terminates at claim verification. Routing returns empty candidates for disabled lanes through declared decision inputs; it does not secretly invoke other components.
+
+## Local execution
+
+Configure the [local-real models](v2/local-real-profile.md). E/F also require:
+
+- `RAG_WORKBENCH_RERANKER_PATH`: an existing local CrossEncoder model directory with safetensors.
+- `RAG_WORKBENCH_RERANKER_REVISION`: SHA-256 directory identity from `rag_workbench.reranking.model_fingerprint(Path(...))`.
+- `RAG_WORKBENCH_RERANKER_DEVICE`: `cpu` (default) or `mps`, subject to measured support.
+
+Install the optional `.[local-real]` dependency group in the project environment if Sentence Transformers is unavailable. No model download or remote-code execution is performed by the adapter.
+
+```bash
+python3 scripts/run_strategy_comparison.py \
+  --dataset data/v2/dataset.json \
+  --corpus data/v2/corpus.json \
+  --requested-at 2026-09-30T00:00:00+00:00 \
+  --split held_out --all
+```
+
+Use `--arm A` through `--arm F` for one arm. All-arm execution uses one fresh process per arm so process-lifetime peak RSS has a useful scope. It retains every failed/preflight record and a comparison exit-status manifest; it does not silently omit failed arms. Successful execution is not promotion.
+
+The checked-in dataset has 22 original synthetic cases across development, tuning, held-out, adversarial and regression splits, covering all twelve query classes. It includes unauthorized, obsolete and rejected evidence. Its corpus fingerprint pins content and policy metadata. These cases exercise machinery and guardrails, not representative domain quality or held-out statistical significance. Do not tune on the held-out cases and then claim them as independent evidence.
+
+## Measurements and limitations
+
+Records include nominated-stage ranking, per-stage ranking/latency, expected-claim checks, query-class fixture pass counts, abstention outcomes, attempted unsupported claims, process peak RSS and pinned input snapshots. Citation precision/coverage remain null when a trustworthy link-level metric is unavailable. Runtime token counts are estimates. Failed cases retain their denominator and fail the command.
+
+Case policy constraints may narrow corpus/revision/applicability scope, never widen the caller scope. Unknown constraints are rejected. Candidate traces use IDs and scores; artifacts retain dataset queries/labels and belong in an access-controlled directory for private corpora.
+
+The checked-in invocation currently fails preflight because local model configuration and services are absent. No real A–F quality or resource comparison is claimed. Corrective/agentic/learning slices remain gated until the real comparison is reproducible and accepted.
 
 
 ---

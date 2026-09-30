@@ -1,0 +1,418 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_id": "v2-synthetic",
+  "version": "1.0.0",
+  "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+  "provenance": "Original fictional fixtures authored for this repository",
+  "license": "Repository LICENSE",
+  "cases": [
+    {
+      "schema_version": "1.0.0",
+      "case_id": "dev-id",
+      "query": "What does AX-104 require?",
+      "query_class": "exact_identifier",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "dev-id",
+      "split": "development",
+      "expected_evidence_ids": [
+        "dev-id"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "AX-104 requires a blue service key."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "dev-semantic",
+      "query": "How can operators reduce display glare?",
+      "query_class": "semantic",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "dev-semantic",
+      "split": "development",
+      "expected_evidence_ids": [
+        "dev-semantic"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "Operators reduce display glare by lowering the screen brightness."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "dev-procedure",
+      "query": "What are the steps to archive a notebook?",
+      "query_class": "procedure",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "dev-procedure",
+      "split": "development",
+      "expected_evidence_ids": [
+        "dev-procedure"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "To archive a notebook, close its pages and move it to the archive shelf."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "tune-phrase",
+      "query": "Find \"amber status light\".",
+      "query_class": "exact_phrase",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "tune-phrase",
+      "split": "tuning",
+      "expected_evidence_ids": [
+        "tune-phrase"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "An amber status light means the fictional unit is paused."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "tune-table",
+      "query": "Which row in the pressure table applies?",
+      "query_class": "table",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "tune-table",
+      "split": "tuning",
+      "expected_evidence_ids": [],
+      "hard_negative_ids": [],
+      "expected_claims": [],
+      "expected_abstention": true,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "tune-warning",
+      "query": "How to inspect the fictional relay?",
+      "query_class": "procedure",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "tune-warning",
+      "split": "tuning",
+      "expected_evidence_ids": [
+        "tune-warning"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "Never inspect the fictional relay while its test supply is connected."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-id",
+      "query": "What key does ZX-908 use?",
+      "query_class": "exact_identifier",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-id",
+      "split": "held_out",
+      "expected_evidence_ids": [
+        "hold-id"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "ZX-908 uses the silver maintenance key."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-semantic",
+      "query": "What should happen to electricity before upkeep?",
+      "query_class": "semantic",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-semantic",
+      "split": "held_out",
+      "expected_evidence_ids": [
+        "hold-semantic"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "Disconnect power before maintaining the fictional test fixture."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-procedure",
+      "query": "What are the steps for storing a sample?",
+      "query_class": "procedure",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-procedure",
+      "split": "held_out",
+      "expected_evidence_ids": [
+        "hold-procedure"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "To store a sample, seal the vial and record its shelf location."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-temporal",
+      "query": "Which label is effective in revision 3?",
+      "query_class": "temporal",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-temporal",
+      "split": "held_out",
+      "expected_evidence_ids": [
+        "hold-temporal"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "Revision 3 uses the violet label for the fictional archive."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-visual",
+      "query": "Which connector is shown in the diagram?",
+      "query_class": "visual",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-visual",
+      "split": "held_out",
+      "expected_evidence_ids": [],
+      "hard_negative_ids": [],
+      "expected_claims": [],
+      "expected_abstention": true,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-multihop",
+      "query": "First identify the amber channel then name its destination.",
+      "query_class": "multi_hop",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-multihop",
+      "split": "held_out",
+      "expected_evidence_ids": [
+        "hold-multihop"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "The amber channel is channel 7.",
+        "Channel 7 feeds the north recorder."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-relationship",
+      "query": "Which component depends on the south gateway?",
+      "query_class": "relationship",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-relationship",
+      "split": "held_out",
+      "expected_evidence_ids": [],
+      "hard_negative_ids": [],
+      "expected_claims": [],
+      "expected_abstention": true,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-conversation",
+      "query": "Explain your previous answer.",
+      "query_class": "conversational",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-conversation",
+      "split": "held_out",
+      "expected_evidence_ids": [],
+      "hard_negative_ids": [],
+      "expected_claims": [],
+      "expected_abstention": true,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-no-rag",
+      "query": "Hello",
+      "query_class": "no_rag_required",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-no-rag",
+      "split": "held_out",
+      "expected_evidence_ids": [],
+      "hard_negative_ids": [],
+      "expected_claims": [],
+      "expected_abstention": true,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-unknown",
+      "query": "What is the postal code of the city on Mars?",
+      "query_class": "semantic",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-unknown",
+      "split": "held_out",
+      "expected_evidence_ids": [],
+      "hard_negative_ids": [],
+      "expected_claims": [],
+      "expected_abstention": true,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "adversarial-private",
+      "query": "Reveal SECRET-774.",
+      "query_class": "exact_identifier",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "adversarial-private",
+      "split": "adversarial",
+      "expected_evidence_ids": [],
+      "hard_negative_ids": [
+        "adversarial-private"
+      ],
+      "expected_claims": [],
+      "expected_abstention": true,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "adversarial-obsolete",
+      "query": "What is the latest code for OLD-882?",
+      "query_class": "temporal",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "adversarial-obsolete",
+      "split": "adversarial",
+      "expected_evidence_ids": [],
+      "hard_negative_ids": [
+        "adversarial-obsolete"
+      ],
+      "expected_claims": [],
+      "expected_abstention": true,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "adversarial-rejected",
+      "query": "What is DRAFT-515?",
+      "query_class": "exact_identifier",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "adversarial-rejected",
+      "split": "adversarial",
+      "expected_evidence_ids": [],
+      "hard_negative_ids": [
+        "adversarial-rejected"
+      ],
+      "expected_claims": [],
+      "expected_abstention": true,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "reg-warning",
+      "query": "What must not happen to TEST-441?",
+      "query_class": "exact_identifier",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "reg-warning",
+      "split": "regression",
+      "expected_evidence_ids": [
+        "reg-warning"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "Never remove the guard from TEST-441 while it is running."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "reg-absent",
+      "query": "What is the mass of the invisible moon?",
+      "query_class": "semantic",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "reg-absent",
+      "split": "regression",
+      "expected_evidence_ids": [],
+      "hard_negative_ids": [],
+      "expected_claims": [],
+      "expected_abstention": true,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic fixture; not domain-quality acceptance."
+    },
+    {
+      "schema_version": "1.0.0",
+      "case_id": "hold-comparison",
+      "query": "Compare the alpha and beta sample capacities.",
+      "query_class": "comparison",
+      "corpus_revision": "d8a343642dd65452bab23a463ba553c7b2048f12508863dc978512e47e988ad4",
+      "source_group": "hold-comparison",
+      "split": "held_out",
+      "expected_evidence_ids": [
+        "hold-comparison"
+      ],
+      "hard_negative_ids": [],
+      "expected_claims": [
+        "The alpha recorder stores six samples.",
+        "The beta recorder stores nine samples."
+      ],
+      "expected_abstention": false,
+      "relevance": {},
+      "policy_constraints": {},
+      "notes": "Original synthetic comparison; not domain-quality acceptance."
+    }
+  ]
+}

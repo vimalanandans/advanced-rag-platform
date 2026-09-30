@@ -17,8 +17,11 @@ def prompt_for(question, selected):
     return INSTRUCTION + "\nQuestion: " + question + "\nEvidence:\n" + "\n".join(f"[{item.id}]\n{item.content}" for item in selected)
 
 
-def query_decision(inputs, _context, _config):
-    return {"decision": classify_query(inputs["query"])}
+def query_decision(inputs, _context, config):
+    decision = classify_query(inputs["query"])
+    if config.get("routing_policy") == "lexical-identifiers@1.0.0" and decision.query_class in {"exact_identifier", "exact_phrase"}:
+        decision = decision.model_copy(update={"recommended_lanes": ["bm25", "structural"], "reason": decision.reason + "; experimental lexical routing"})
+    return {"decision": decision}
 
 
 def verify_evidence(inputs, _context, _config):
@@ -99,7 +102,7 @@ def verify_claims(inputs, _context, _config):
 
 def register_v2_components(registry: ComponentRegistry, generation_provider: OllamaModelProvider | None = None):
     definitions = [
-        ("query.classifier", "2.0.0", "transformation", {"query": "string"}, {"decision": "query_decision"}, query_decision, {}),
+        ("query.classifier", "2.0.0", "transformation", {"query": "string"}, {"decision": "query_decision"}, query_decision, {"routing_policy": {"enum": ["all-lanes@1.0.0", "lexical-identifiers@1.0.0"]}}),
         ("retrieval.structural", "2.0.0", "retrieval.structural", {"query": "string", "evidence": "evidence_list"}, {"candidates": "candidates"},
          lambda inputs, _context, config: {"candidates": StructuralRetriever(config.get("max_depth", 3)).retrieve(inputs["query"], inputs["evidence"], config.get("limit", 5))},
          {"limit": {"type": "integer", "minimum": 1, "maximum": 100}, "max_depth": {"type": "integer", "minimum": 0, "maximum": 10}}),

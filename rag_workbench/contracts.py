@@ -205,6 +205,7 @@ class RunManifest(BaseModel):
     error: str | None = None
     loop_outcomes: list[dict[str, Any]] = Field(default_factory=list)
     embedding_identity: dict[str, Any] = Field(default_factory=dict)
+    asset_versions: dict[str, str] = Field(default_factory=dict)
     retrieval_candidates: list[dict[str, Any]] = Field(default_factory=list)
     decisions: list[dict[str, Any]] = Field(default_factory=list)
 
