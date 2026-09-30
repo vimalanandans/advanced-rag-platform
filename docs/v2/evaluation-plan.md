@@ -57,4 +57,4 @@ An experiment is reproducible only when referenced corpus/index/model assets rem
 
 ## Sourced benchmark input
 
-[HotpotQA benchmark provenance and scope](../research/hotpotqa-benchmark.md) documents the first downloaded, pinned corpus and its retrieval-only BM25 baseline. It covers hard multi-hop and comparison questions in the distractor setting. Other V2 content/query classes need independent sourced evaluation before broad quality acceptance.
+[HotpotQA benchmark provenance and scope](../research/hotpotqa-benchmark.md) documents the first downloaded, pinned corpus, BM25 baseline and local real-model A-F comparison. It covers hard multi-hop and comparison questions in the distractor setting. Other V2 content/query classes need independent sourced evaluation before broad quality acceptance.

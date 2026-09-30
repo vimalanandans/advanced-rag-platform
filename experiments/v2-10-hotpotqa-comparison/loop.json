@@ -1,0 +1,79 @@
+{
+  "task_id": "v2-10-real-hotpotqa-af",
+  "problem": "Synthetic A-F comparisons did not measure sourced retrieval quality or generalizable answer support.",
+  "query_or_content_class": "48 hard HotpotQA distractor bridge/comparison questions; 476 licensed passages",
+  "hypothesis": "Dense and hybrid lanes improve supporting-passage retrieval compared with BM25 under identical authorized question scopes.",
+  "baseline": {
+    "arm_A_recall_at_5": 0.8125,
+    "arm_A_all_supporting_in_top_5": 31
+  },
+  "experiment": {
+    "dataset_fingerprint": "c8f64308452da9f4828fbc1009413d6505865ee64cb251936a6605d04bcd2ea6",
+    "corpus_revision": "373b40fd170693ae901a7de84b7ba06050cd187eb34ae69dd9de78c864671628",
+    "arms": {
+      "A": {
+        "recall_at_5": 0.8125,
+        "mrr": 0.8791666666666668,
+        "answer_cases_passed": 0
+      },
+      "B": {
+        "recall_at_5": 0.9166666666666666,
+        "mrr": 0.9444444444444445,
+        "answer_cases_passed": 1
+      },
+      "C": {
+        "recall_at_5": 0.9583333333333334,
+        "mrr": 0.9166666666666666,
+        "answer_cases_passed": 0
+      },
+      "D": {
+        "recall_at_5": 0.8958333333333334,
+        "mrr": 0.9034722222222222,
+        "answer_cases_passed": 0
+      },
+      "E": {
+        "recall_at_5": 0.8958333333333334,
+        "mrr": 0.921875,
+        "answer_cases_passed": 0
+      },
+      "F": {
+        "recall_at_5": 0.8958333333333334,
+        "mrr": 0.921875,
+        "answer_cases_passed": 0
+      }
+    }
+  },
+  "files_changed": [
+    "scripts/summarize_hotpotqa_comparison.py",
+    "tests/test_hotpotqa_comparison.py",
+    "docs/research/hotpotqa-benchmark.md"
+  ],
+  "commands_run": [
+    "run_strategy_comparison.py --arm A..F --split held_out --max-latency-ms 60000 with pinned local providers",
+    "scripts/summarize_hotpotqa_comparison.py .local/corpora/hotpotqa/benchmark"
+  ],
+  "tests_run": [],
+  "metrics_before": {
+    "arm_A_recall_at_5": 0.8125
+  },
+  "metrics_after": {
+    "best_recall_arm": "C",
+    "best_recall_at_5": 0.9583333333333334,
+    "best_all_supporting_top_5": 44,
+    "arm_B_recall_delta_vs_A": 0.10416666666666667,
+    "arm_C_recall_delta_vs_A": 0.14583333333333334
+  },
+  "failures": [
+    "Answer/citation expectations passed at most one of 48 cases in any arm.",
+    "The current verbatim claim verifier cannot support most inferred or yes/no benchmark answers."
+  ],
+  "root_causes": [
+    "HotpotQA often requires multi-document inference; the current generator/verifier contract accepts complete source sentences only.",
+    "Structural candidates diluted fusion ranking versus arm C in this corpus."
+  ],
+  "regressions": [
+    "D recall@5 below C; E/F did not restore C recall."
+  ],
+  "decision": "reject",
+  "notes": "Reject strategy promotion and advanced corrective/agentic gate. Accept only the reproducible local measurement record. One sequential run per arm; timing differences are descriptive and not controlled cold/warm performance estimates. Full case records and licensed source remain Git ignored."
+}
