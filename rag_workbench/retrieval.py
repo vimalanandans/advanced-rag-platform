@@ -6,6 +6,7 @@ import math
 import re
 import hashlib
 import uuid
+import json
 from collections import Counter
 from typing import Iterable
 
@@ -79,33 +80,40 @@ class IndexedDenseRetriever(Retriever):
 
     def retrieve(self, query: str, evidence: Iterable[Evidence], limit: int = 5) -> list[RetrievalCandidate]:
         approved = [item for item in evidence if item.approval_state == "approved"]
+        if not approved:
+            return []
         self._ensure_index(approved)
-        by_id = {item.id: item for item in approved}
-        matches = self.index.search(_embedding(query, self.dimensions), limit=limit)
+        by_id = {self._point_id(item): item for item in approved}
+        matches = self.index.search(_embedding(query, self.dimensions), limit=limit, allowed_point_ids=sorted(by_id))
         candidates: list[RetrievalCandidate] = []
         for rank, match in enumerate(matches, start=1):
-            evidence_id = str(match.get("payload", {}).get("evidence_id", ""))
-            item = by_id.get(evidence_id)
-            if item is not None:
-                candidates.append(RetrievalCandidate(
-                    evidence=item, lane=self.lane, score=float(match.get("score", 0.0)), rank=rank
-                ))
+            item = by_id.get(str(match.get("id", "")))
+            if item is None:
+                raise PermissionError("vector provider returned a point outside the authorized snapshot")
+            score = float(match.get("score", 0.0))
+            if not math.isfinite(score):
+                raise ValueError("vector provider returned a non-finite score")
+            candidates.append(RetrievalCandidate(evidence=item, lane=self.lane, score=score, rank=rank))
         return candidates
 
     def _ensure_index(self, evidence: list[Evidence]) -> None:
         revision = hashlib.sha256(
-            "|".join(f"{item.id}:{item.revision}" for item in evidence).encode("utf-8")
+            "|".join(sorted(self._point_id(item) for item in evidence)).encode("utf-8")
         ).hexdigest()
         if revision == self._indexed_revision:
             return
         self.index.create_index(self.dimensions)
         for item in evidence:
             self.index.upsert(
-                str(uuid.uuid5(uuid.NAMESPACE_URL, f"{item.id}:{item.revision}")),
+                self._point_id(item),
                 _embedding(item.content, self.dimensions),
                 {"evidence_id": item.id, "document_id": item.document_id, "revision": item.revision},
             )
         self._indexed_revision = revision
+
+    def _point_id(self, item: Evidence) -> str:
+        identity = json.dumps({"evidence": item.model_dump(mode="json", exclude={"source_uri"}), "embedding": "hashed-fixture-v1", "dimensions": self.dimensions}, sort_keys=True, separators=(",", ":"))
+        return str(uuid.uuid5(uuid.NAMESPACE_URL, identity))
 
 
 class VectorlessHierarchicalRetriever(Retriever):

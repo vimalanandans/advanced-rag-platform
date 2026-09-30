@@ -126,7 +126,7 @@ class WorkbenchRuntime:
             failure = error
             raise
         finally:
-            self.trace_store.save(self._manifest(plan, run_id, trace_id, request, context, executions, "failed" if failure else "completed", str(failure) if failure else None))
+            self.trace_store.save(self._manifest(plan, run_id, trace_id, request, context, executions, "failed" if failure else "completed", _safe_error(failure) if failure else None))
 
     def _execute_node(self, plan: ExecutionPlan, node_id: str, state: dict[str, Any], context: ExecutionContext, executions: list[NodeExecution], iteration: int = 0) -> None:
         node = next(item for item in plan.pipeline.graph.nodes if item.id == node_id)
@@ -143,7 +143,7 @@ class WorkbenchRuntime:
             state[node.id] = outputs
             executions.append(NodeExecution(node_id=node.id, component=node.component, status="completed", duration_ms=int((time.monotonic() - started) * 1000), input_metadata=_metadata(inputs), output_metadata=_metadata(outputs), iteration=iteration))
         except Exception as error:
-            executions.append(NodeExecution(node_id=node.id, component=node.component, status="failed", duration_ms=int((time.monotonic() - started) * 1000), error=str(error), iteration=iteration))
+            executions.append(NodeExecution(node_id=node.id, component=node.component, status="failed", duration_ms=int((time.monotonic() - started) * 1000), error=_safe_error(error), iteration=iteration))
             raise
 
     @staticmethod
@@ -257,6 +257,12 @@ class WorkbenchRuntime:
 def _metadata(values: dict[str, Any]) -> dict[str, Any]:
     """Safe trace metadata: counts/types, never raw document content or secrets."""
     return {key: (len(value) if isinstance(value, (list, dict, str)) else type(value).__name__) for key, value in values.items()}
+
+
+def _safe_error(error: Exception) -> str:
+    """Exception messages may contain URLs, credentials or source content."""
+    descriptions = {BudgetExceeded: "execution budget exceeded", AuthorizationError: "request scope denied", PermissionError: "evidence scope denied", TypeError: "component contract invalid"}
+    return f"{type(error).__name__}: {descriptions.get(type(error), 'execution failed')}"
 
 
 def demo_runtime(trace_store: TraceStore | None = None, provider_profile: LocalProviderProfile | None = None) -> WorkbenchRuntime:

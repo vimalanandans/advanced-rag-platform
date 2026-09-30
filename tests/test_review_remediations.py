@@ -56,7 +56,7 @@ def test_failed_component_persists_terminal_trace():
     with pytest.raises(RuntimeError, match="provider failed"):
         runtime.run(runtime.compile(_pipeline("test.fail@1.0.0")), "fail")
     saved = runtime.trace_store.list()[0]
-    assert saved.status == "failed" and "provider failed" in (saved.error or "")
+    assert saved.status == "failed" and saved.error == "RuntimeError: execution failed"
     assert saved.node_executions[-1].status == "failed"
 
 

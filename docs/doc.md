@@ -16,34 +16,36 @@ This file combines the Markdown documentation under `docs/` for convenient readi
 10. `adr/009-local-provider-profiles.md`
 11. `adr/010-v2-incremental-evidence-platform.md`
 12. `adr/011-explicit-runtime-terminal-and-loop-outcomes.md`
-13. `adr/template.md`
-14. `api/README.md`
-15. `architecture/README.md`
-16. `architecture/system.md`
-17. `data-engineer-guide/README.md`
-18. `definition-of-done/README.md`
-19. `design-principles/README.md`
-20. `developer-guide/README.md`
-21. `evaluation/README.md`
-22. `observability/README.md`
-23. `operations/README.md`
-24. `product/roadmap-and-specification.md`
-25. `product-ux/README.md`
-26. `product-ux/ai-native-workspace-guide.md`
-27. `reference/configuration.md`
-28. `research/README.md`
-29. `security/README.md`
-30. `testing/README.md`
-31. `user-guide/first-local-run.md`
-32. `v2/current-system-assessment.md`
-33. `v2/evaluation-plan.md`
-34. `v2/implementation-status.md`
-35. `v2/migration-plan.md`
-36. `v2/requirements.md`
-37. `v2/research-plan.md`
-38. `v2/runtime-contract.md`
-39. `v2/target-architecture.md`
-40. `validation/README.md`
+13. `adr/012-scoped-vector-search-and-immutable-traces.md`
+14. `adr/template.md`
+15. `api/README.md`
+16. `architecture/README.md`
+17. `architecture/system.md`
+18. `data-engineer-guide/README.md`
+19. `definition-of-done/README.md`
+20. `design-principles/README.md`
+21. `developer-guide/README.md`
+22. `evaluation/README.md`
+23. `observability/README.md`
+24. `operations/README.md`
+25. `product/roadmap-and-specification.md`
+26. `product-ux/README.md`
+27. `product-ux/ai-native-workspace-guide.md`
+28. `reference/configuration.md`
+29. `research/README.md`
+30. `research/qdrant-authorized-point-filter.md`
+31. `security/README.md`
+32. `testing/README.md`
+33. `user-guide/first-local-run.md`
+34. `v2/current-system-assessment.md`
+35. `v2/evaluation-plan.md`
+36. `v2/implementation-status.md`
+37. `v2/migration-plan.md`
+38. `v2/requirements.md`
+39. `v2/research-plan.md`
+40. `v2/runtime-contract.md`
+41. `v2/target-architecture.md`
+42. `validation/README.md`
 
 
 ---
@@ -338,6 +340,31 @@ Exhaustion either raises a traced failure or forces abstention with no citations
 ## Consequences
 
 Corrective retrieval still requires its own policy, planner, query/action budgets and evaluation; this slice alone does not enable it. Legacy graphs remain readable and deterministic ranking is unchanged. Provider interruption/cancellation, strict component configuration schemas, error-edge scheduling and append-only trace stores remain separate work. New graph formats use explicit outputs; rollback can select the existing v1 baseline, but must not restore the unsafe exhaustion behavior.
+
+
+---
+
+<!-- Source: adr/012-scoped-vector-search-and-immutable-traces.md -->
+
+# ADR-012: Scope vector candidates before selection and preserve terminal records
+
+## Status
+
+Accepted for implementation; live Qdrant/PostgreSQL integration remains unverified.
+
+## Context
+
+Shared Qdrant collections can retain points outside a request's authorized snapshot. Post-filtering cannot prevent them from consuming top-k. Trace adapters allowed replacement of terminal manifests and retained arbitrary exception text.
+
+## Decision
+
+Require `allowed_point_ids` at the VectorIndex search boundary and translate it to a Qdrant ID filter before ranking. Derive point identity from evidence content, revision, scope/policy metadata and embedding configuration. Skip empty-scope searches and reject out-of-scope results. Existing old points need not be destructively removed; they are ineligible under the new identities.
+
+Make terminal stores idempotent for identical writes and reject conflicting writes. JSON uses atomic no-overwrite publication and validates UUID path components; memory returns copies; PostgreSQL inserts without conflict updates then compares the stored record. Persist error class and a safe description instead of arbitrary provider exception text.
+
+## Consequences
+
+Custom vector adapters must implement the new required scope parameter; an adapter that ignores it is invalid. A provider returning an unexpected point fails rather than silently dropping it. Large authorized ID sets need measured scaling work. Existing traces remain readable; no destructive schema migration occurs. Live database concurrency and provider operation require separate acceptance. Raw errors are available to callers for debugging but never copied into run manifests.
 
 
 ---
@@ -814,6 +841,11 @@ settings.
 Never log secrets, raw credentials, or evidence the current request is not authorized to see. When debugging a
 bad answer, start with the manifest, source locator, policy filter, lane candidates, and context plan—not a
 full prompt dump.
+
+
+## Terminal-record immutability
+
+Identical terminal writes are idempotent; a different record under an existing run ID raises `TraceConflictError`. JSON publishes atomically without replacing files and rejects non-UUID path components. Memory returns defensive copies. PostgreSQL uses insert-on-conflict-do-nothing and verifies equality; live database acceptance is still outstanding. Error traces retain error type and a safe category, not arbitrary provider exception messages.
 
 
 ---
@@ -1647,6 +1679,21 @@ Follow the [V2 research plan](v2/research-plan.md). Add a dated record per techn
 
 ---
 
+<!-- Source: research/qdrant-authorized-point-filter.md -->
+
+# Qdrant authorized point filtering
+
+Reviewed 2026-09-30. Primary sources: [Qdrant filtering](https://qdrant.tech/documentation/search/filtering/) and [search-point API](https://api.qdrant.tech/master/api-reference/search/points).
+
+Problem: filtering provider results only after top-k can let unauthorized or obsolete points consume the candidate budget. The documented `has_id` filter restricts candidate search to a specified set of point IDs. The adapter now requires the point IDs derived from the runtime-authorized snapshot and supplies that filter in every search request.
+
+Point identity includes evidence content/revision, tenant/policy metadata and embedding configuration; an ID cannot silently refer to another scope or changed content. Empty scope avoids provider work. Unexpected returned IDs fail closed. In-memory shared-index fixtures verify exclusion before top-k and point identity separation; a request-contract test checks the outgoing filter. No latency/recall improvement is claimed from these tests.
+
+Limitations: materializing a large ID set has request-size and latency costs; measure before large-corpus adoption and migrate to equivalent indexed policy predicates when necessary. Compose pins Qdrant 1.11.3; the `has_id` feature exists in historical documentation, but a live check against that image remains required. No model or new dependency/license is introduced. M3 feasibility still depends on Docker integration measurement.
+
+
+---
+
 <!-- Source: security/README.md -->
 
 # Security Guide
@@ -1955,6 +2002,11 @@ Next execute V2-01 local operations/safety hardening and extend V2-02 metrics/po
 ## Runtime safety milestone (2026-09-30)
 
 Implemented explicit graph-schema-2 terminal bindings, enforced loop fallback, loop execution before downstream consumers, authorization-denial persistence, and typed evidence/candidate list checks. V1 baseline fingerprint is preserved. See [runtime contract](v2/runtime-contract.md) and ADR-011. Verification: 49 tests passed at this milestone; Docker/live-provider gates remain blocked. Remaining-runtime statements above describe work outside this completed safety subset.
+
+
+## Scope and persistence milestone (2026-09-30)
+
+Implemented mandatory authorized point-ID filtering inside vector search, content/scope-sensitive point identity, empty-scope no-op, fail-closed unexpected results, immutable/idempotent trace writes, JSON UUID path checks and safe error traces. Verification: 57 tests passed. Qdrant request-contract and in-memory shared-index tests pass; live Qdrant/PostgreSQL checks remain unverified. See ADR-012 and the [filter research record](research/qdrant-authorized-point-filter.md).
 
 
 ---

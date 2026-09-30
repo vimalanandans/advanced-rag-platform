@@ -14,7 +14,7 @@ from urllib.request import Request, urlopen
 class VectorIndex(Protocol):
     def create_index(self, dimensions: int) -> None: ...
     def upsert(self, point_id: str, vector: list[float], payload: dict) -> None: ...
-    def search(self, vector: list[float], limit: int = 5) -> list[dict]: ...
+    def search(self, vector: list[float], limit: int = 5, *, allowed_point_ids: list[str]) -> list[dict]: ...
     def health(self) -> bool: ...
 
 
@@ -38,8 +38,10 @@ class QdrantVectorIndex:
     def upsert(self, point_id: str, vector: list[float], payload: dict) -> None:
         self._request("PUT", f"/collections/{self.collection}/points?wait=true", {"points": [{"id": point_id, "vector": vector, "payload": payload}]})
 
-    def search(self, vector: list[float], limit: int = 5) -> list[dict]:
-        response = self._request("POST", f"/collections/{self.collection}/points/search", {"vector": vector, "limit": limit, "with_payload": True})
+    def search(self, vector: list[float], limit: int = 5, *, allowed_point_ids: list[str]) -> list[dict]:
+        if not allowed_point_ids:
+            return []
+        response = self._request("POST", f"/collections/{self.collection}/points/search", {"vector": vector, "limit": limit, "with_payload": True, "filter": {"must": [{"has_id": allowed_point_ids}]}})
         return response.get("result", [])
 
     def health(self) -> bool:

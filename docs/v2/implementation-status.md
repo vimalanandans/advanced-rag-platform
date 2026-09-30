@@ -33,3 +33,8 @@ Next execute V2-01 local operations/safety hardening and extend V2-02 metrics/po
 ## Runtime safety milestone (2026-09-30)
 
 Implemented explicit graph-schema-2 terminal bindings, enforced loop fallback, loop execution before downstream consumers, authorization-denial persistence, and typed evidence/candidate list checks. V1 baseline fingerprint is preserved. See [runtime contract](runtime-contract.md) and ADR-011. Verification: 49 tests passed at this milestone; Docker/live-provider gates remain blocked. Remaining-runtime statements above describe work outside this completed safety subset.
+
+
+## Scope and persistence milestone (2026-09-30)
+
+Implemented mandatory authorized point-ID filtering inside vector search, content/scope-sensitive point identity, empty-scope no-op, fail-closed unexpected results, immutable/idempotent trace writes, JSON UUID path checks and safe error traces. Verification: 57 tests passed. Qdrant request-contract and in-memory shared-index tests pass; live Qdrant/PostgreSQL checks remain unverified. See ADR-012 and the [filter research record](../research/qdrant-authorized-point-filter.md).

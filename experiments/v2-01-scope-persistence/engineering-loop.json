@@ -1,0 +1,48 @@
+{
+  "task_id": "v2-01-scope-persistence",
+  "problem": "Shared vector indexes selected out-of-scope candidates before filtering, and terminal stores allowed overwrite.",
+  "query_or_content_class": "authorization and trace persistence",
+  "hypothesis": "Mandatory pre-selection point filters and immutable records preserve scope and forensic history.",
+  "baseline": {
+    "tests": 49
+  },
+  "experiment": {
+    "suite": "tests/test_scope_and_immutability.py"
+  },
+  "files_changed": [
+    "rag_workbench/providers.py",
+    "rag_workbench/retrieval.py",
+    "rag_workbench/observability.py",
+    "rag_workbench/runtime.py",
+    "tests/test_scope_and_immutability.py",
+    "tests/test_provider_profiles.py",
+    "tests/test_review_remediations.py",
+    "docs/adr/012-scoped-vector-search-and-immutable-traces.md",
+    "docs/research/qdrant-authorized-point-filter.md",
+    "docs/observability/README.md",
+    "docs/v2/implementation-status.md",
+    "docs/doc.md"
+  ],
+  "commands_run": [
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q",
+    "python3 scripts/check_docs.py",
+    "python3 -m compileall -q rag_workbench",
+    "git diff --check"
+  ],
+  "tests_run": [
+    "57 passed"
+  ],
+  "metrics_before": {
+    "tests": 49
+  },
+  "metrics_after": {
+    "tests": 57
+  },
+  "failures": [],
+  "root_causes": [
+    "Provider search lacked scope; trace saves replaced terminal records; raw exceptions were persisted"
+  ],
+  "regressions": [],
+  "decision": "accept",
+  "notes": "Deterministic/request-contract safety subset accepted. Live Qdrant/PostgreSQL and large-scope performance remain unverified."
+}
