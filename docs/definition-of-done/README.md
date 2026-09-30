@@ -11,7 +11,7 @@ Every change must satisfy all of the following before it is **done**:
 | --- | --- |
 | Scope and decision | The requirement, affected contracts, and non-goals are documented. A material architectural choice has an ADR. |
 | Contract and graph | Public interfaces are typed, semantically versioned where public, provider-neutral, and graph validation covers dependencies, schemas, capabilities, budgets, and loops. |
-| Safety | Evidence authorization occurs before generation. Logs contain only safe metadata. No secret, cloud dependency, hidden downstream call, or silent fallback was added. |
+| Safety | Evidence authorization occurs before retrieval, including provider-side candidate selection, cache lookup, and every corrective iteration. Logs contain only safe metadata. No secret, cloud dependency, hidden downstream call, or silent fallback was added. |
 | Observability | A trace records graph fingerprint, component versions, provider/model identity, budgets, node events, outcome, and failure reason. |
 | Verification | Deterministic unit/contract/graph tests cover success and failure paths. Relevant golden evaluation data detects a regression. |
 | Local operation | The documented local path works without cloud services. Configuration and examples are documented, including recovery or rollback behavior. |
@@ -30,9 +30,9 @@ Every change must satisfy all of the following before it is **done**:
 
 - It passes deterministic recall/citation/abstention fixtures alongside BM25, dense, or vectorless peers as
   applicable.
-- It cannot introduce unauthorized, stale, disallowed-revision, or inapplicable evidence into generation.
+- It cannot expose unauthorized, stale, disallowed-revision, or inapplicable evidence to candidate selection or generation.
 - It reports candidates, lane, rank, and score so fusion and verification can be inspected.
-- Tuning changes are evaluated against versioned fixtures and the pipeline fingerprint is captured.
+- Tuning changes are evaluated on separate versioned tuning and held-out sets; retain graph/strategy/data/model/index identities, stage metrics, baseline comparison, failure analysis, and an explicit acceptance decision.
 
 ### Pipeline or runtime behavior
 
@@ -84,3 +84,8 @@ and executes Markdown/PDF evidence through all three retrieval lanes to a cited 
 durable trace. The Qdrant/Ollama profile is **accepted** only after its separate provider smoke test and
 regression fixture pass. Visual graph editing, multi-tenant authentication, skills/tools, cloud adapters, and
 scaling are explicitly later work—not implied by this Definition of Done.
+
+
+## V2-specific gates
+
+Use the [V2 evaluation plan](../v2/evaluation-plan.md) for A–F comparisons and metric definitions. Record each meaningful loop in `experiments/`. The first V2 milestone includes reranking, query classification and claim verification; these cannot be postponed until agentic retrieval. A passing deterministic fixture is not evidence of semantic dense quality. The M3 local-real profile requires live operational acceptance and must retain the deterministic regression path.

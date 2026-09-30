@@ -4,6 +4,9 @@ This is the living documentation index for the Local-First Graph-Native RAG Work
 defined by typed contracts, versioned pipeline YAML, and executable tests; these guides explain how to use and
 operate that behavior without duplicating provider implementation details.
 
+For a single-file reading copy of all Markdown documentation under this directory, see the
+[Documentation Compendium](doc.md). The individual files remain the editable source of truth.
+
 ## Start here
 
 | Audience | Read this | Outcome |
@@ -15,8 +18,15 @@ operate that behavior without duplicating provider implementation details.
 | Developer | [Developer guide](developer-guide/README.md), [Architecture](architecture/system.md), [ADRs](adr/) | Extend components without breaking graph or provider boundaries. |
 | Operator | [Operations](operations/README.md), [Configuration reference](reference/configuration.md), [Security](security/README.md) | Start a reproducible local stack and inspect durable traces. |
 
+## V2 requirements
+
+Start with the [V2 requirements and coverage map](v2/requirements.md). It links the assessment, target architecture,
+migration/backlog, evaluation and research plans. These specifications describe planned behavior; the assessment
+records verified current behavior.
+
 ## Reference map
 
+- [Product roadmap and specification](product/roadmap-and-specification.md) defines the concept, planned feature inventory, phase gates, and working practices.
 - [Architecture](architecture/system.md) explains dependencies, runtime flow, and local service boundaries.
 - [API reference](api/README.md) documents the FastAPI endpoints. The live local OpenAPI schema is served at
   `/openapi.json`, with interactive Swagger UI at `/docs`.

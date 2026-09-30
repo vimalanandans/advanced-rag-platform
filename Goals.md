@@ -48,7 +48,8 @@ cannot satisfy.
 
 ## Product decisions and acceptance
 
-The [Advanced RAG Strategies guide](ADVANCED_RAG_STRATEGIES.md) explains when a retrieval technique is worth
-adding. [Architecture](ARCHITECTURE.md) explains the boundaries that keep it composable. The
-[Definition of Done](docs/definition-of-done/README.md) defines the evidence required to call a change
-accepted.
+The [Platform Roadmap and Specification](docs/product/roadmap-and-specification.md) defines the planned
+feature set, phase gates, and engineering practices. The [Advanced RAG Strategies guide](ADVANCED_RAG_STRATEGIES.md)
+explains when a retrieval technique is worth adding. [Architecture](ARCHITECTURE.md) explains the boundaries
+that keep it composable. The [Definition of Done](docs/definition-of-done/README.md) defines the evidence
+required to call a change accepted.

@@ -51,7 +51,7 @@ def extract_routes(source: Path) -> set[tuple[str, str]]:
 def local_markdown_link_errors(root: Path) -> list[str]:
     """Return missing relative Markdown links without probing external URLs."""
     errors: list[str] = []
-    documents = [root / name for name in ("README.md", "Goals.md", "ARCHITECTURE.md", "CONTRIBUTING.md", "SECURITY.md")]
+    documents = [root / name for name in ("README.md", "Goals.md", "ARCHITECTURE.md", "CONTRIBUTING.md", "SECURITY.md", "AGENT.md", "AGENTS.md")]
     documents.extend((root / "docs").rglob("*.md"))
     for document in documents:
         if not document.exists():

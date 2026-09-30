@@ -38,3 +38,8 @@ fingerprint alongside comparison results.
 
 Keep tuning data separate from held-out regression cases. Do not promote a strategy merely because it improves
 a single metric while degrading citations, policy enforcement, cost, or abstention.
+
+
+## V2 experiment requirements
+
+The current runner checks citation inclusion and abstention only. Follow the [V2 evaluation plan](../v2/evaluation-plan.md) for stage metric definitions, split isolation, the A–F experiment, resource measurement and promotion rules. These are planned capabilities, not existing endpoint output. Store loop decisions under `experiments/`.

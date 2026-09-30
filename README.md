@@ -11,7 +11,7 @@ provider versions, budget usage, and safe node-level trace metadata.
 
 ## What you can do today
 
-- Run a validated baseline graph with lexical/BM25, dense, and vectorless structural retrieval.
+- Run a validated baseline graph with simplified lexical scoring, deterministic hashed-vector retrieval, and heading-based structural retrieval. These are fixtures, not a real semantic dense baseline.
 - Fuse, verify, and pack approved evidence before local generation.
 - Ingest Markdown and PDF evidence with source, revision, section/page locator, and policy metadata.
 - Inspect response, citations, context usage, node activity, errors, and persisted run manifests in Studio.
@@ -56,7 +56,7 @@ profile; see the [operations guide](docs/operations/README.md).
 ```text
 question
   → authorize evidence
-  → BM25 + dense + vectorless retrieval
+  → lexical + hashed-vector + heading-based retrieval
   → reciprocal-rank fusion
   → evidence verification
   → bounded context assembly
@@ -67,11 +67,18 @@ The `PipelineGraph`, not individual components, owns sequencing, branching, retr
 Components publish typed, versioned manifests; providers stay behind provider-neutral interfaces. This is what
 makes an execution reproducible and a provider replaceable.
 
+## V2 evolution
+
+The [V2 requirements and coverage map](docs/v2/requirements.md) defines the planned evolution, including the
+[current-system assessment](docs/v2/current-system-assessment.md), target architecture and measured migration.
+Real embeddings, persistent BM25, claim verification and the local-real profile are planned, not shipped.
+
 ## Documentation
 
 Start from the [documentation index](docs/README.md):
 
 - [Product goals](Goals.md) — users, outcomes, and non-goals.
+- [Product roadmap and platform specification](docs/product/roadmap-and-specification.md) — current capability status, detailed feature inventory, phase gates, contracts, and development practices.
 - [System architecture](docs/architecture/system.md) — dependency boundaries and execution flow.
 - [API reference](docs/api/README.md) — local control endpoints and request scope.
 - [Configuration reference](docs/reference/configuration.md) — profile, storage, and Studio settings.

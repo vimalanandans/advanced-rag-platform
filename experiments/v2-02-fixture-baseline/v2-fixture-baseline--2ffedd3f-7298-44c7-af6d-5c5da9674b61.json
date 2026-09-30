@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0.0",
+  "experiment_id": "v2-fixture-baseline",
+  "run_id": "2ffedd3f-7298-44c7-af6d-5c5da9674b61",
+  "hypothesis": "The preserved fixture can produce a versioned, persisted ranking baseline.",
+  "baseline": "local-evidence-baseline@1.0.0",
+  "candidate_strategy": {
+    "schema_version": "1.0.0",
+    "strategy_id": "deterministic_fixture",
+    "version": "1.0.0",
+    "graph_fingerprint": "bd09657a714267231398fb586187c369ee2b3c5a2ec805f5e37be63d008e619c",
+    "supported_query_classes": [
+      "semantic"
+    ],
+    "supported_content_classes": [
+      "markdown"
+    ],
+    "required_components": [
+      "query.classifier@1.0.0",
+      "retrieval.bm25@1.0.0",
+      "retrieval.dense@1.0.0",
+      "retrieval.vectorless@1.0.0",
+      "fusion.rrf@1.0.0",
+      "verification.evidence@1.0.0",
+      "context.evidence_packer@1.0.0",
+      "generation.local@1.0.0"
+    ],
+    "required_models": [
+      "deterministic-local-generator@1.0.0"
+    ],
+    "required_indexes": [],
+    "latency_expectations": {
+      "budget_ms": 15000
+    },
+    "resource_requirements": {
+      "profile": "deterministic",
+      "model_download": false
+    },
+    "known_limitations": [
+      "Hashed vectors, simplified lexical scoring, two regression cases; not held-out research."
+    ],
+    "evaluation_dataset": "baseline-fixture@1.0.0",
+    "promotion_status": "experimental"
+  },
+  "dataset_fingerprint": "64769ea9bd0f4d088d4f683c49ee22c3349b8756b67b2ca36a2985e058e3490b",
+  "config_fingerprint": "e9dd5a13675f64c09c98092034605cc2f422f3f237b49620bf1baf6abfe2c1d3",
+  "split": "regression",
+  "status": "completed",
+  "case_results": [
+    {
+      "case_id": "citations-and-abstention",
+      "query_class": "semantic",
+      "status": "completed",
+      "passed": true,
+      "run_id": "d31536d0-d59e-4e7e-9e45-66f8f46f95b6",
+      "ranked_evidence_ids": [
+        "local-demo:rag_basics:section:evidence-first-rag:1"
+      ],
+      "citation_ids": [
+        "local-demo:rag_basics:section:evidence-first-rag:1"
+      ],
+      "abstained": false,
+      "ranking": {
+        "schema_version": "1.0.0",
+        "k": 5,
+        "recall_at_k": 1.0,
+        "precision_at_k": 0.2,
+        "mrr": 1.0,
+        "ndcg_at_k": 1.0,
+        "hard_negative_hits": 0,
+        "relevant_count": 1,
+        "retrieved_count": 1,
+        "unavailable_reason": null
+      },
+      "latency_ms": 0.39599999945494346,
+      "token_usage": {
+        "input_tokens": 30,
+        "output_tokens": 34,
+        "context_tokens": 30,
+        "retrieval_reasoning_tokens": 6
+      },
+      "claim_support": null
+    },
+    {
+      "case_id": "unsupported-question",
+      "query_class": "semantic",
+      "status": "completed",
+      "passed": true,
+      "run_id": "1c792ace-f0a3-421d-9044-b3148337a3a7",
+      "ranked_evidence_ids": [],
+      "citation_ids": [],
+      "abstained": true,
+      "ranking": {
+        "schema_version": "1.0.0",
+        "k": 5,
+        "recall_at_k": null,
+        "precision_at_k": 0.0,
+        "mrr": null,
+        "ndcg_at_k": null,
+        "hard_negative_hits": 0,
+        "relevant_count": 0,
+        "retrieved_count": 0,
+        "unavailable_reason": "no expected relevant evidence"
+      },
+      "latency_ms": 0.18850000196835026,
+      "token_usage": {
+        "input_tokens": 0,
+        "output_tokens": 8,
+        "context_tokens": 0,
+        "retrieval_reasoning_tokens": 6
+      },
+      "claim_support": null
+    }
+  ],
+  "metrics": {
+    "cases": 2,
+    "completed_cases": 2,
+    "fixture_passes": 2,
+    "citation_precision": null,
+    "citation_coverage": null,
+    "unsupported_claim_rate": null,
+    "peak_memory_bytes": null,
+    "recall_at_k": {
+      "mean": 1.0,
+      "denominator": 1
+    },
+    "precision_at_k": {
+      "mean": 0.1,
+      "denominator": 2
+    },
+    "mrr": {
+      "mean": 1.0,
+      "denominator": 1
+    },
+    "ndcg_at_k": {
+      "mean": 1.0,
+      "denominator": 1
+    }
+  },
+  "failures": [],
+  "decision": "iterate",
+  "notes": "Deterministic fixture measurement only. No semantic retrieval, claim support, or promotion evidence. Missing metrics remain null."
+}
