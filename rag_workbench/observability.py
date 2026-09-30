@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import os
 import tempfile
-from uuid import UUID
 from pathlib import Path
 from typing import Protocol
+from uuid import UUID
 
 from rag_workbench.contracts import RunManifest
 

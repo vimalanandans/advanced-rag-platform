@@ -1,11 +1,11 @@
 """Summarize complete local A-F records without copying licensed case content."""
 from __future__ import annotations
 
-from collections import defaultdict
 import json
-from pathlib import Path
 import random
 import sys
+from collections import defaultdict
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ARMS = 'ABCDEF'

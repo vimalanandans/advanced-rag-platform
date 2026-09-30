@@ -26,8 +26,8 @@ class SharedIndex:
 
 
 def evidence(**updates):
-    return Evidence(**(dict(id="same-id", document_id="doc", source_uri="file:///public", revision="v1",
-                           content="evidence", title="source", locator="section:1") | updates))
+    return Evidence(**({"id": "same-id", "document_id": "doc", "source_uri": "file:///public", "revision": "v1",
+                        "content": "evidence", "title": "source", "locator": "section:1"} | updates))
 
 
 def test_shared_index_filters_before_top_k_and_separates_tenants_and_content():
@@ -99,8 +99,8 @@ def test_json_store_rejects_path_traversal(tmp_path):
 
 def test_runtime_trace_redacts_provider_exception_content():
     from rag_workbench.graph import pipeline_from_yaml
-    from rag_workbench.runtime import demo_runtime
     from rag_workbench.providers import LocalProviderProfile
+    from rag_workbench.runtime import demo_runtime
     runtime = demo_runtime(provider_profile=LocalProviderProfile())
     def fail(*_):
         raise RuntimeError("https://user:private-token@provider/private-evidence")

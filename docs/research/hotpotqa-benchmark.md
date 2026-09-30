@@ -10,6 +10,20 @@ The repository's [dataset and corpus reference](../../advanced-rag-datasets-and-
 | License | CC BY-SA 4.0; attribute HotpotQA and preserve share-alike terms for redistribution |
 | Local raw path | `.local/corpora/hotpotqa/validation-00000-of-00001.parquet` (Git ignored) |
 
+To reproduce the local corpus, install the benchmark extra and run the pinned preparation script from
+the repository root:
+
+```bash
+python3 -m pip install -e '.[benchmark]'
+python3 scripts/prepare_hotpotqa.py
+python3 scripts/evaluate_hotpotqa_retrieval.py
+```
+
+The preparation script downloads the pinned file if absent, enforces a 100 MB bound, verifies its
+SHA-256 before use, and writes the source, transformed corpus, case manifest, and provenance under
+`.local/corpora/hotpotqa/`. Keep that directory out of commits and pushes. The evaluation script
+reads the local prepared data; its command-line options describe where to write local results.
+
 `python3 scripts/prepare_hotpotqa.py` verifies the source hash and selects the 24 lowest SHA-256 question IDs in each of the bridge and comparison categories. All validation records are labeled `hard`; there is no easy/medium stratum to claim. The resulting 48 cases and 476 passages are stored under ignored `.local/corpora/hotpotqa/benchmark/`. Paragraph IDs include the question ID; each case's allowed-corpus policy restricts retrieval to its own candidate passages. Positive paragraph labels derive from supporting-fact titles, and sentence indexes are validated. The gold answer is kept in case notes for audit, never inserted into evidence. No answers are used in selection. Corpus revision and dataset fingerprint are recorded in local provenance.
 
 The source is a **validation set**, used here as a locked local held-out benchmark. Do not tune generation or retrieval on its labels and call it an independent test. This measures retrieval in the supplied distractor context. It does not measure open-Wikipedia retrieval, document parsing, visual/table/temporal classes, or the full V2 domain. Some questions require short yes/no or inferred answers that the current verbatim sentence verifier cannot emit; report retrieval and answer/abstention separately. A later open-corpus or licensed technical-document benchmark will need its own source, labels, and release.

@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from collections import Counter
-from contextlib import closing
 import hashlib
 import json
 import math
 import os
-from pathlib import Path
 import re
 import sqlite3
-from typing import Iterable
+from collections import Counter
+from collections.abc import Iterable
+from contextlib import closing
+from pathlib import Path
 
 from rag_workbench.contracts import Evidence, RetrievalCandidate
 from rag_workbench.retrieval import Retriever, _rank, tokens

@@ -3,8 +3,16 @@ from pathlib import Path
 import pytest
 
 from rag_workbench.contracts import (
-    Budget, CapabilityManifest, ComponentManifest, Edge, EdgeKind, Loop,
-    Node, Pipeline, PipelineGraph, RequestContext,
+    Budget,
+    CapabilityManifest,
+    ComponentManifest,
+    Edge,
+    EdgeKind,
+    Loop,
+    Node,
+    Pipeline,
+    PipelineGraph,
+    RequestContext,
 )
 from rag_workbench.graph import GraphValidationError, pipeline_from_yaml
 from rag_workbench.registry import ComponentRegistry

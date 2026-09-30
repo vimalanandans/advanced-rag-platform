@@ -1,5 +1,7 @@
 import json
+
 import pytest
+
 from scripts.summarize_hotpotqa_comparison import summarize
 
 

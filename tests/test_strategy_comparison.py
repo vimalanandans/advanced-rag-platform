@@ -64,6 +64,7 @@ def test_reranker_model_change_rejected_before_loading(tmp_path):
 
 def test_checked_in_dataset_is_pinned_and_split_validated():
     import json
+
     from rag_workbench.experimentation import DatasetManifest, corpus_fingerprint
     root = Path(__file__).parent.parent
     dataset = DatasetManifest.model_validate_json((root / "data/v2/dataset.json").read_text())
@@ -76,7 +77,7 @@ def test_checked_in_dataset_is_pinned_and_split_validated():
 @pytest.mark.parametrize("arm", list(ARMS))
 def test_each_arm_executes_through_verified_terminal_with_provider_doubles(tmp_path, monkeypatch, arm):
     from rag_workbench.embeddings import OllamaEmbeddingProvider
-    from rag_workbench.providers import QdrantVectorIndex, OllamaModelProvider
+    from rag_workbench.providers import OllamaModelProvider, QdrantVectorIndex
     monkeypatch.setattr(OllamaEmbeddingProvider, "encode", lambda self, texts, **kwargs: [[1.0, 0.0] for _ in texts])
     monkeypatch.setattr(QdrantVectorIndex, "create_index", lambda *args: None)
     monkeypatch.setattr(QdrantVectorIndex, "upsert", lambda *args: None)

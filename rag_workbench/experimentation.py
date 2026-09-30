@@ -15,7 +15,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from rag_workbench.contracts import ComponentManifest, Evidence, RequestContext, QueryClass
+from rag_workbench.contracts import ComponentManifest, Evidence, QueryClass, RequestContext
 from rag_workbench.graph import ExecutionPlan, pipeline_snapshot
 from rag_workbench.runtime import WorkbenchRuntime
 
@@ -340,7 +340,7 @@ def run_experiment(
                 "abstention_correct": result.abstained == case.expected_abstention,
                 "expected_abstention": case.expected_abstention,
             })
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 - record a failed case without exposing provider details
             # Error class only: provider exception text can contain private URLs/data.
             failures.append(f"{case.case_id}: {type(error).__name__}")
             failed = {"case_id": case.case_id, "query_class": case.query_class,

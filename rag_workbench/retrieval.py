@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import re
-import hashlib
 import uuid
-import json
 from collections import Counter
-from typing import Iterable, TYPE_CHECKING
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from rag_workbench.contracts import Evidence, RetrievalCandidate
 from rag_workbench.providers import VectorIndex

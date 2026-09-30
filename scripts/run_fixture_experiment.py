@@ -3,17 +3,23 @@
 from __future__ import annotations
 
 import argparse
-from datetime import UTC, datetime
-from pathlib import Path
 import sys
 import uuid
+from datetime import UTC, datetime
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from rag_workbench.contracts import RequestContext
 from rag_workbench.evaluation import load_cases
-from rag_workbench.experimentation import DatasetManifest, ExperimentCase, StrategyManifest, corpus_fingerprint, run_experiment
+from rag_workbench.experimentation import (
+    DatasetManifest,
+    ExperimentCase,
+    StrategyManifest,
+    corpus_fingerprint,
+    run_experiment,
+)
 from rag_workbench.graph import pipeline_from_yaml
 from rag_workbench.observability import JsonTraceStore
 from rag_workbench.providers import LocalProviderProfile

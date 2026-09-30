@@ -2,20 +2,38 @@
 
 from __future__ import annotations
 
-import time
-import uuid
 import hashlib
 import json
+import time
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from rag_workbench.contracts import Budget, ClaimSupport, ContextPlan, Evidence, NodeExecution, Pipeline, QueryDecision, RequestContext, RetrievalCandidate, RunManifest, RunResult, TokenUsage
+from rag_workbench.contracts import (
+    Budget,
+    ClaimSupport,
+    ContextPlan,
+    Evidence,
+    NodeExecution,
+    Pipeline,
+    QueryDecision,
+    RequestContext,
+    RetrievalCandidate,
+    RunManifest,
+    RunResult,
+    TokenUsage,
+)
 from rag_workbench.graph import ExecutionPlan, compile_pipeline
 from rag_workbench.observability import LocalTraceStore, TraceStore
-from rag_workbench.providers import LocalProviderProfile, OllamaModelProvider, QdrantVectorIndex, provider_profile_from_environment
-from rag_workbench.retrieval import IndexedDenseRetriever
+from rag_workbench.providers import (
+    LocalProviderProfile,
+    OllamaModelProvider,
+    QdrantVectorIndex,
+    provider_profile_from_environment,
+)
 from rag_workbench.registry import ComponentRegistry, baseline_registry
+from rag_workbench.retrieval import IndexedDenseRetriever
 
 
 class BudgetExceeded(RuntimeError):

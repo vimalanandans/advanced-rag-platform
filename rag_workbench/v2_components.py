@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import time
-from typing import Any
 
 from rag_workbench.contracts import CapabilityManifest, ComponentManifest, ContextPlan, TokenUsage
-from rag_workbench.intelligence import StructuralRetriever, classify_query, sentences, verify_quoted_claims
+from rag_workbench.intelligence import (
+    StructuralRetriever,
+    classify_query,
+    sentences,
+    verify_quoted_claims,
+)
 from rag_workbench.providers import OllamaModelProvider
 from rag_workbench.registry import ComponentRegistry
 

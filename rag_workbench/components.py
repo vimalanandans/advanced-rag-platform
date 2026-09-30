@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
-from typing import Any
 import time
+from typing import Any
 
-from rag_workbench.contracts import ContextPlan, Evidence, TokenUsage
+from rag_workbench.contracts import ContextPlan, TokenUsage
 from rag_workbench.providers import OllamaModelProvider
-from rag_workbench.retrieval import BM25Retriever, DenseRetriever, Retriever, VectorlessHierarchicalRetriever, evidence_sufficient, reciprocal_rank_fusion
+from rag_workbench.retrieval import (
+    BM25Retriever,
+    DenseRetriever,
+    Retriever,
+    VectorlessHierarchicalRetriever,
+    evidence_sufficient,
+    reciprocal_rank_fusion,
+)
 
 
 def classify(inputs: dict[str, Any], _context: Any, _config: dict[str, Any]) -> dict[str, Any]:

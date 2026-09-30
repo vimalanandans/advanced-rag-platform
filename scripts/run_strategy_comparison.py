@@ -3,18 +3,23 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
 import json
-from pathlib import Path
 import subprocess
 import sys
 import uuid
+from datetime import datetime
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from rag_workbench.contracts import Evidence, RequestContext
-from rag_workbench.experimentation import DatasetManifest, ExperimentRecord, StrategyManifest, run_experiment
+from rag_workbench.experimentation import (
+    DatasetManifest,
+    ExperimentRecord,
+    StrategyManifest,
+    run_experiment,
+)
 from rag_workbench.local_real import local_real_runtime
 from rag_workbench.observability import JsonTraceStore
 from rag_workbench.strategy_graphs import ARMS, experiment_pipeline
@@ -88,7 +93,7 @@ def main() -> int:
         record = ExperimentRecord.model_validate_json(artifact.read_text())
         print(artifact)
         return int(bool(record.failures))
-    except Exception as error:
+    except Exception as error:  # noqa: BLE001 - persist a redacted preflight failure
         target = args.output / f"preflight-{args.arm.lower()}-{run_id}.json"
         with target.open("x") as output:
             json.dump({"arm": args.arm, "status": "failed", "phase": "preflight", "error_type": type(error).__name__, "decision": "iterate"}, output, indent=2)

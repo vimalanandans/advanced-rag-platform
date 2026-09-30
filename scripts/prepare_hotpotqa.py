@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import argparse
+import json
+import sys
 from collections import defaultdict
 from hashlib import sha256
-import json
 from pathlib import Path
-import sys
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -60,7 +60,7 @@ def prepare(path: Path, output: Path, *, expected_sha256: str = SOURCE_SHA256,
     if per_stratum <= 0:
         raise ValueError("per-stratum count must be positive")
     verified_hash(path, expected_sha256)
-    import pyarrow.parquet as parquet
+    from pyarrow import parquet
     table = parquet.read_table(path)
     if not {"id", "question", "answer", "type", "level", "context", "supporting_facts"} <= set(table.column_names):
         raise ValueError("HotpotQA schema is incomplete")

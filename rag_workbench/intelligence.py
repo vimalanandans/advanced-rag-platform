@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import re
-from typing import Iterable, Literal
+from collections.abc import Iterable
 
-
-from rag_workbench.contracts import Evidence, RetrievalCandidate, QueryDecision, ClaimSupport
-from rag_workbench.retrieval import Retriever, tokens, _rank
-
+from rag_workbench.contracts import ClaimSupport, Evidence, QueryDecision, RetrievalCandidate
+from rag_workbench.retrieval import Retriever, _rank, tokens
 
 
 def classify_query(query: str) -> QueryDecision:

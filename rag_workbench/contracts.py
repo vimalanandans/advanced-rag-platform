@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from enum import Enum
 from datetime import UTC, datetime
+from enum import Enum
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-
 
 QueryClass = Literal[
     "exact_identifier", "exact_phrase", "semantic", "comparison", "procedure",
@@ -95,7 +94,7 @@ class Pipeline(BaseModel):
     graph: PipelineGraph
 
     @model_validator(mode="after")
-    def version_is_semantic(self) -> "Pipeline":
+    def version_is_semantic(self) -> Pipeline:
         if len(self.version.split(".")) != 3 or not all(part.isdigit() for part in self.version.split(".")):
             raise ValueError("pipeline version must be semantic major.minor.patch")
         return self

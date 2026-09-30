@@ -6,8 +6,14 @@ from pydantic import ValidationError
 
 from rag_workbench.contracts import RequestContext
 from rag_workbench.experimentation import (
-    DatasetManifest, ExperimentCase, ExperimentRecord, StrategyManifest,
-    corpus_fingerprint, ranking_metrics, run_experiment, write_record,
+    DatasetManifest,
+    ExperimentCase,
+    ExperimentRecord,
+    StrategyManifest,
+    corpus_fingerprint,
+    ranking_metrics,
+    run_experiment,
+    write_record,
 )
 from rag_workbench.graph import pipeline_from_yaml
 from rag_workbench.providers import LocalProviderProfile
@@ -15,9 +21,9 @@ from rag_workbench.runtime import demo_runtime
 
 
 def case(**updates):
-    values = dict(case_id="one", query="query", query_class="semantic", corpus_revision="revision",
-                  source_group="source", split="regression", expected_evidence_ids=["a", "b"],
-                  hard_negative_ids=["negative"])
+    values = {"case_id": "one", "query": "query", "query_class": "semantic", "corpus_revision": "revision",
+              "source_group": "source", "split": "regression", "expected_evidence_ids": ["a", "b"],
+              "hard_negative_ids": ["negative"]}
     return ExperimentCase(**(values | updates))
 
 

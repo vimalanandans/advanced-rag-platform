@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import os
 import json
+import os
 from pathlib import Path
 
 from rag_workbench.contracts import CapabilityManifest, ComponentManifest
@@ -82,8 +82,8 @@ def local_real_runtime(*, trace_store: TraceStore | None = None, environ: dict[s
         runtime.asset_versions["reranker"] = reranker.identity
     release_id = values.get("RAG_WORKBENCH_CORPUS_RELEASE")
     if release_id:
-        from rag_workbench.evidence_store import EvidenceStore
         from rag_workbench.contracts import RequestContext
+        from rag_workbench.evidence_store import EvidenceStore
         store = EvidenceStore(Path(values.get("RAG_WORKBENCH_STORAGE", ".local")) / "evidence")
         release = store.load(release_id, RequestContext(tenant_id="local", user_id="local-admin"))
         runtime.set_evidence([item for document in release.documents for item in document.evidence])

@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import json
 import ipaddress
+import json
 from dataclasses import dataclass
 from typing import Protocol
-from urllib.parse import urlparse
 from urllib.error import HTTPError
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 

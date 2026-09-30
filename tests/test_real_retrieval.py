@@ -6,8 +6,8 @@ import pytest
 from rag_workbench.contracts import Evidence
 from rag_workbench.embeddings import EmbeddingIdentity, OllamaEmbeddingProvider
 from rag_workbench.lexical import ExactRetriever, PersistentBM25Retriever
-from rag_workbench.retrieval import IndexedDenseRetriever
 from rag_workbench.providers import QdrantVectorIndex
+from rag_workbench.retrieval import IndexedDenseRetriever
 
 
 def doc(identifier, content):
@@ -114,8 +114,9 @@ def test_local_real_profile_requires_explicit_model_identity():
 
 def test_local_real_graph_compiles_and_rejects_invalid_component_config(tmp_path):
     from pathlib import Path
+
+    from rag_workbench.graph import GraphValidationError, pipeline_from_yaml
     from rag_workbench.local_real import local_real_runtime
-    from rag_workbench.graph import pipeline_from_yaml, GraphValidationError
     runtime = local_real_runtime(environ={
         "RAG_WORKBENCH_EMBEDDING_MODEL": "test:latest", "RAG_WORKBENCH_EMBEDDING_REVISION": "digest",
         "RAG_WORKBENCH_EMBEDDING_DIMENSIONS": "2", "RAG_WORKBENCH_OLLAMA_MODEL": "generator:latest",
@@ -161,6 +162,7 @@ def test_embedding_prefix_is_applied_by_purpose():
 def test_generation_options_are_explicit_and_context_overflow_rejected(monkeypatch):
     import io
     import json
+
     from rag_workbench import providers
     calls = []
     def request(req, **kwargs):

@@ -2,17 +2,16 @@ from pathlib import Path
 
 import pytest
 
-from rag_workbench.contracts import Budget, Evidence, RetrievalCandidate
+from rag_workbench.contracts import Budget, Evidence, RequestContext, RetrievalCandidate
 from rag_workbench.ingestion import ingest_structural_path
 from rag_workbench.intelligence import StructuralRetriever, classify_query, verify_quoted_claims
-from rag_workbench.v2_components import pack_context, verify_claims, verify_evidence
 from rag_workbench.runtime import ExecutionContext
-from rag_workbench.contracts import RequestContext
+from rag_workbench.v2_components import pack_context, verify_claims, verify_evidence
 
 
 def doc(identifier="source", content="Never remove the safety guard.", **updates):
-    return Evidence(**(dict(id=identifier, document_id="manual", source_uri="file:///manual", revision="1",
-                           content=content, title="Manual", locator="section:1") | updates))
+    return Evidence(**({"id": identifier, "document_id": "manual", "source_uri": "file:///manual", "revision": "1",
+                        "content": content, "title": "Manual", "locator": "section:1"} | updates))
 
 
 @pytest.mark.parametrize("query, expected", [
@@ -76,10 +75,10 @@ def test_unresolved_revision_conflict_forces_insufficient_evidence():
 
 
 def test_full_v2_graph_returns_only_verified_claims(tmp_path, monkeypatch):
-    from rag_workbench.local_real import local_real_runtime
-    from rag_workbench.graph import pipeline_from_yaml
-    from rag_workbench.providers import QdrantVectorIndex, OllamaModelProvider
     from rag_workbench.embeddings import OllamaEmbeddingProvider
+    from rag_workbench.graph import pipeline_from_yaml
+    from rag_workbench.local_real import local_real_runtime
+    from rag_workbench.providers import OllamaModelProvider, QdrantVectorIndex
     points = {}
     monkeypatch.setattr(OllamaEmbeddingProvider, "encode", lambda self, texts, **kwargs: [[1.0, 0.0] for _ in texts])
     monkeypatch.setattr(QdrantVectorIndex, "create_index", lambda *args: None)
@@ -113,7 +112,7 @@ def test_unavailable_visual_capability_does_not_fall_through_to_text_answer():
 
 def test_legacy_prompt_components_remain_replayable():
     from rag_workbench.registry import baseline_registry
-    from rag_workbench.v2_components import register_v2_components, prompt_for, LEGACY_INSTRUCTION
+    from rag_workbench.v2_components import LEGACY_INSTRUCTION, prompt_for, register_v2_components
     registry = baseline_registry()
     register_v2_components(registry)
     for identifier in ['generation.local', 'context.evidence_packer']:
@@ -124,8 +123,8 @@ def test_legacy_prompt_components_remain_replayable():
 
 
 def test_next_line_citation_preserves_source_fidelity():
-    from rag_workbench.intelligence import verify_quoted_claims
     from rag_workbench.contracts import Evidence
+    from rag_workbench.intelligence import verify_quoted_claims
     source = Evidence(id='source', document_id='d', source_uri='fixture://d', revision='1', title='d', locator='1', content='Never remove the safety guard.')
     answer = 'Never remove the safety guard.\n[source]'
     assert all(c.support == 'supported' for c in verify_quoted_claims(answer, [source], allow_next_line=True))
