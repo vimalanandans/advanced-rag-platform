@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from rag_workbench.contracts import Budget, ContextPlan, Evidence, NodeExecution, Pipeline, RequestContext, RunManifest, RunResult, TokenUsage
+from rag_workbench.contracts import Budget, ContextPlan, Evidence, NodeExecution, Pipeline, RequestContext, RetrievalCandidate, RunManifest, RunResult, TokenUsage
 from rag_workbench.graph import ExecutionPlan, compile_pipeline
 from rag_workbench.observability import LocalTraceStore, TraceStore
 from rag_workbench.providers import LocalProviderProfile, OllamaModelProvider, QdrantVectorIndex, provider_profile_from_environment
@@ -32,6 +32,8 @@ class ExecutionContext:
     usage: TokenUsage = field(default_factory=TokenUsage)
     tool_calls: int = 0
     iterations: int = 0
+    loop_outcomes: list[dict[str, Any]] = field(default_factory=list)
+    forced_abstention: bool = False
 
     def assert_within_deadline(self) -> None:
         if (time.monotonic() - self.started_at) * 1000 > self.budget.max_latency_ms:
@@ -84,29 +86,41 @@ class WorkbenchRuntime:
 
     def run(self, plan: ExecutionPlan, question: str, request: RequestContext | None = None) -> RunResult:
         request = request or RequestContext(tenant_id=plan.pipeline.tenant_id, user_id="local-admin")
-        if request.tenant_id != plan.pipeline.tenant_id:
-            raise AuthorizationError("request tenant is not authorized for this pipeline")
         context = ExecutionContext(request=request, budget=plan.pipeline.budgets)
-        state: dict[str, Any] = {"$query": question, "$evidence": self._authorized_evidence(request)}
+        state: dict[str, Any] = {"$query": question}
         run_id, trace_id = str(uuid.uuid4()), str(uuid.uuid4())
         executions: list[NodeExecution] = []
         failure: Exception | None = None
 
         try:
+            if request.tenant_id != plan.pipeline.tenant_id:
+                raise AuthorizationError("request tenant is not authorized for this pipeline")
+            state["$evidence"] = self._authorized_evidence(request)
+            loop_ends = {loop.nodes[-1]: loop for loop in plan.pipeline.graph.loops}
             for node_id in plan.order:
                 if self._should_execute(plan, node_id, state):
                     self._execute_node(plan, node_id, state, context, executions)
                 else:
                     node = next(item for item in plan.pipeline.graph.nodes if item.id == node_id)
                     executions.append(NodeExecution(node_id=node.id, component=node.component, status="skipped", duration_ms=0, output_metadata={"reason": "conditional edge not selected"}))
-            for loop in plan.pipeline.graph.loops:
-                self._execute_loop(plan, loop, state, context, executions)
-            generated = state.get("generate", {})
+                if node_id in loop_ends:
+                    self._execute_loop(plan, loop_ends[node_id], state, context, executions)
+                if context.forced_abstention:
+                    break
+            if context.forced_abstention:
+                generated = {"answer": "I cannot answer because the retrieval loop exhausted its bounds.", "citations": [], "abstained": True}
+                context_plan = ContextPlan()
+            elif plan.pipeline.graph.schema_version == "2.0.0":
+                generated = {name: self._resolve_binding(binding, state) for name, binding in plan.pipeline.graph.outputs.items()}
+                context_plan = generated.get("context", ContextPlan())
+            else:
+                generated = state.get("generate", {})
+                context_plan = state.get("context", {}).get("context", ContextPlan())
             return RunResult(
                 manifest=self._manifest(plan, run_id, trace_id, request, context, executions, "completed", None),
                 answer=generated.get("answer", "I cannot answer from the approved evidence available."),
                 citations=generated.get("citations", []), abstained=generated.get("abstained", True),
-                context=state.get("context", {}).get("context", ContextPlan()),
+                context=context_plan,
             )
         except Exception as error:
             failure = error
@@ -125,9 +139,9 @@ class WorkbenchRuntime:
                 raise ValueError(f"component {node.component} returned outputs outside its contract")
             self._validate_output_values(node.outputs, outputs)
             self._account_outputs(outputs, context)
+            context.assert_within_deadline()
             state[node.id] = outputs
             executions.append(NodeExecution(node_id=node.id, component=node.component, status="completed", duration_ms=int((time.monotonic() - started) * 1000), input_metadata=_metadata(inputs), output_metadata=_metadata(outputs), iteration=iteration))
-            context.assert_within_deadline()
         except Exception as error:
             executions.append(NodeExecution(node_id=node.id, component=node.component, status="failed", duration_ms=int((time.monotonic() - started) * 1000), error=str(error), iteration=iteration))
             raise
@@ -139,6 +153,9 @@ class WorkbenchRuntime:
             expected = expected_python_types.get(type_name)
             if expected and not isinstance(outputs[name], expected):
                 raise TypeError(f"component output {name} must be {type_name}")
+            element_type = {"candidates": RetrievalCandidate, "evidence_list": Evidence}.get(type_name)
+            if element_type and any(not isinstance(item, element_type) for item in outputs[name]):
+                raise TypeError(f"component output {name} contains invalid {type_name} elements")
 
     @staticmethod
     def _account_outputs(outputs: dict[str, Any], context: ExecutionContext) -> None:
@@ -154,15 +171,24 @@ class WorkbenchRuntime:
         started, initial_usage, initial_tools = time.monotonic(), context.usage.model_copy(deep=True), context.tool_calls
         for iteration in range(1, loop.budget.max_iterations + 1):
             if self._exit_condition(loop.exit_when, state):
+                context.loop_outcomes.append({"loop_id": loop.id, "status": "exited", "iterations": iteration - 1})
                 return
             context.record_iteration()
             for node_id in loop.nodes:
-                self._execute_node(plan, node_id, state, context, executions, iteration)
+                if self._should_execute(plan, node_id, state):
+                    self._execute_node(plan, node_id, state, context, executions, iteration)
+                else:
+                    state.pop(node_id, None)
+                    node = next(item for item in plan.pipeline.graph.nodes if item.id == node_id)
+                    executions.append(NodeExecution(node_id=node.id, component=node.component, status="skipped", duration_ms=0, iteration=iteration, output_metadata={"reason": "conditional edge not selected"}))
                 self._assert_loop_budget(loop, started, initial_usage, initial_tools, context)
             if self._exit_condition(loop.exit_when, state):
+                context.loop_outcomes.append({"loop_id": loop.id, "status": "exited", "iterations": iteration})
                 return
+        context.loop_outcomes.append({"loop_id": loop.id, "status": "exhausted", "iterations": loop.budget.max_iterations, "fallback": loop.fallback})
         if loop.fallback == "fail":
             raise BudgetExceeded(f"loop {loop.id} exhausted without exit condition")
+        context.forced_abstention = True
 
     @staticmethod
     def _assert_loop_budget(loop: Any, started: float, initial_usage: TokenUsage, initial_tools: int, context: ExecutionContext) -> None:
@@ -224,6 +250,7 @@ class WorkbenchRuntime:
             component_versions={node.component.split("@")[0]: node.component.split("@")[1] for node in plan.pipeline.graph.nodes},
             model_version=self.model_version, index_revisions={"local": "fixture-v1"},
             token_usage=context.usage, node_executions=executions, status=status, error=error,
+            loop_outcomes=context.loop_outcomes,
         )
 
 

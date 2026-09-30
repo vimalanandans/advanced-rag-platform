@@ -1,6 +1,6 @@
 # V2 implementation status
 
-Updated 2026-09-29. This is a delivery record, not a claim that the entire V2 platform exists.
+Updated 2026-09-30. This is a delivery record, not a claim that the entire V2 platform exists.
 
 ## Delivered
 
@@ -28,3 +28,8 @@ See [experiment artifacts](../../experiments/v2-02-fixture-baseline/README.md). 
 All local-real retrieval, corpus publication/index lifecycle, shared-index authorization hardening, runtime terminal/loop/deadline changes, claim/conflict verification, real reranking/classification/routing, representative held-out datasets, A–F comparison, Studio inspection extensions and advanced research slices remain pending. Documentation is specified; this list is not implemented by the first experiment slice.
 
 Next execute V2-01 local operations/safety hardening and extend V2-02 metrics/policy cases, then V2-03 real retrieval. Docker/M3-dependent gates require the target environment; independent deterministic work can proceed without pretending those gates passed.
+
+
+## Runtime safety milestone (2026-09-30)
+
+Implemented explicit graph-schema-2 terminal bindings, enforced loop fallback, loop execution before downstream consumers, authorization-denial persistence, and typed evidence/candidate list checks. V1 baseline fingerprint is preserved. See [runtime contract](runtime-contract.md) and ADR-011. Verification: 49 tests passed at this milestone; Docker/live-provider gates remain blocked. Remaining-runtime statements above describe work outside this completed safety subset.

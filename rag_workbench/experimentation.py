@@ -16,7 +16,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from rag_workbench.contracts import ComponentManifest, Evidence, RequestContext
-from rag_workbench.graph import ExecutionPlan
+from rag_workbench.graph import ExecutionPlan, pipeline_snapshot
 from rag_workbench.runtime import WorkbenchRuntime
 
 VERSION = r"^\d+\.\d+\.\d+$"
@@ -326,7 +326,7 @@ def run_experiment(
         schema_version="1.1.0",
         dataset_snapshot=dataset.model_dump(mode="json"),
         configuration_snapshot=configuration,
-        pipeline_snapshot=plan.pipeline.model_dump(mode="json"),
+        pipeline_snapshot=pipeline_snapshot(plan.pipeline),
         experiment_id=experiment_id, run_id=run_id, hypothesis=hypothesis, baseline=baseline,
         candidate_strategy=strategy, dataset_fingerprint=dataset.fingerprint,
         config_fingerprint=fingerprint(configuration),

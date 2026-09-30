@@ -15,33 +15,35 @@ This file combines the Markdown documentation under `docs/` for convenient readi
 9. `adr/008-durable-local-traces.md`
 10. `adr/009-local-provider-profiles.md`
 11. `adr/010-v2-incremental-evidence-platform.md`
-12. `adr/template.md`
-13. `api/README.md`
-14. `architecture/README.md`
-15. `architecture/system.md`
-16. `data-engineer-guide/README.md`
-17. `definition-of-done/README.md`
-18. `design-principles/README.md`
-19. `developer-guide/README.md`
-20. `evaluation/README.md`
-21. `observability/README.md`
-22. `operations/README.md`
-23. `product/roadmap-and-specification.md`
-24. `product-ux/README.md`
-25. `product-ux/ai-native-workspace-guide.md`
-26. `reference/configuration.md`
-27. `research/README.md`
-28. `security/README.md`
-29. `testing/README.md`
-30. `user-guide/first-local-run.md`
-31. `v2/current-system-assessment.md`
-32. `v2/evaluation-plan.md`
-33. `v2/implementation-status.md`
-34. `v2/migration-plan.md`
-35. `v2/requirements.md`
-36. `v2/research-plan.md`
-37. `v2/target-architecture.md`
-38. `validation/README.md`
+12. `adr/011-explicit-runtime-terminal-and-loop-outcomes.md`
+13. `adr/template.md`
+14. `api/README.md`
+15. `architecture/README.md`
+16. `architecture/system.md`
+17. `data-engineer-guide/README.md`
+18. `definition-of-done/README.md`
+19. `design-principles/README.md`
+20. `developer-guide/README.md`
+21. `evaluation/README.md`
+22. `observability/README.md`
+23. `operations/README.md`
+24. `product/roadmap-and-specification.md`
+25. `product-ux/README.md`
+26. `product-ux/ai-native-workspace-guide.md`
+27. `reference/configuration.md`
+28. `research/README.md`
+29. `security/README.md`
+30. `testing/README.md`
+31. `user-guide/first-local-run.md`
+32. `v2/current-system-assessment.md`
+33. `v2/evaluation-plan.md`
+34. `v2/implementation-status.md`
+35. `v2/migration-plan.md`
+36. `v2/requirements.md`
+37. `v2/research-plan.md`
+38. `v2/runtime-contract.md`
+39. `v2/target-architecture.md`
+40. `validation/README.md`
 
 
 ---
@@ -311,6 +313,31 @@ Retain the platform-owned graph IR, registry boundary, provider-neutral contract
 ## Consequences
 
 Existing artifacts remain readable; changed behavior gets new versions and index migration. Reranking, classification and claim verification enter the first V2 milestone. Model and provider choices remain pending measured feasibility and licensing research. No new dependency, service, or research technique is accepted by this ADR alone. Rollback restores a compatible previous strategy/graph/model/index/corpus release. See the [migration plan](v2/migration-plan.md).
+
+
+---
+
+<!-- Source: adr/011-explicit-runtime-terminal-and-loop-outcomes.md -->
+
+# ADR-011: Explicit terminal outputs and enforced loop outcomes
+
+## Status
+
+Accepted; implemented as an additive runtime safety slice on 2026-09-30.
+
+## Context
+
+The v1 runtime selects results from fixed `generate`/`context` node IDs. Loop fallback `abstain` was declarative only, and loops ran after downstream generation. Tenant denial happened outside terminal trace persistence. These behaviors block safely adding corrective retrieval.
+
+## Decision
+
+Graph schema `2.0.0` requires typed terminal bindings for answer, citations and abstained, with optional context. The compiler validates their sources and types. V1 graphs retain their canonical representation and fingerprint. Execute bounded repetitions when the last loop node finishes, before downstream nodes. Reject overlapping/reordered loops, cross-loop feedback and graphs whose consumers execute before a loop finishes. Honor conditional edges during repetition, removing skipped stale outputs.
+
+Exhaustion either raises a traced failure or forces abstention with no citations. Persist loop outcomes separately from node events. Allocate run identity before authorization so safe denial records survive. Validate evidence/candidate list element types at component boundaries.
+
+## Consequences
+
+Corrective retrieval still requires its own policy, planner, query/action budgets and evaluation; this slice alone does not enable it. Legacy graphs remain readable and deterministic ranking is unchanged. Provider interruption/cancellation, strict component configuration schemas, error-edge scheduling and append-only trace stores remain separate work. New graph formats use explicit outputs; rollback can select the existing v1 baseline, but must not restore the unsafe exhaustion behavior.
 
 
 ---
@@ -1895,7 +1922,7 @@ An experiment is reproducible only when referenced corpus/index/model assets rem
 
 # V2 implementation status
 
-Updated 2026-09-29. This is a delivery record, not a claim that the entire V2 platform exists.
+Updated 2026-09-30. This is a delivery record, not a claim that the entire V2 platform exists.
 
 ## Delivered
 
@@ -1923,6 +1950,11 @@ See [experiment artifacts](../experiments/v2-02-fixture-baseline/README.md). The
 All local-real retrieval, corpus publication/index lifecycle, shared-index authorization hardening, runtime terminal/loop/deadline changes, claim/conflict verification, real reranking/classification/routing, representative held-out datasets, A–F comparison, Studio inspection extensions and advanced research slices remain pending. Documentation is specified; this list is not implemented by the first experiment slice.
 
 Next execute V2-01 local operations/safety hardening and extend V2-02 metrics/policy cases, then V2-03 real retrieval. Docker/M3-dependent gates require the target environment; independent deterministic work can proceed without pretending those gates passed.
+
+
+## Runtime safety milestone (2026-09-30)
+
+Implemented explicit graph-schema-2 terminal bindings, enforced loop fallback, loop execution before downstream consumers, authorization-denial persistence, and typed evidence/candidate list checks. V1 baseline fingerprint is preserved. See [runtime contract](v2/runtime-contract.md) and ADR-011. Verification: 49 tests passed at this milestone; Docker/live-provider gates remain blocked. Remaining-runtime statements above describe work outside this completed safety subset.
 
 
 ---
@@ -2077,6 +2109,38 @@ Save records under `docs/research/`. Revisit them when model/API/license version
 Record M3 variant, RAM, OS, serving runtime, model version/quantization, context limits and license. Compare native Ollama/MLX and supported container paths where relevant; do not assume container GPU equivalence. Measure cold load, warm latency, batch throughput, peak memory and coexistence with PostgreSQL/Qdrant/Studio. Reject defaults that exceed the measured envelope. Keep provider SDK and model-specific settings behind adapters.
 
 The initial scope does not train a language model with RL. Later rewards may include evidence retrieval, supported claims, citations, correct abstention and resolution, with costs for unnecessary calls, latency, tokens and unsupported claims. Policy violations remain forbidden actions/hard rejection gates, not penalties that can be traded for reward. Offline learning requires leakage-controlled trajectories, a fixed baseline, versioned policy, safety evaluation and explicit promotion.
+
+
+---
+
+<!-- Source: v2/runtime-contract.md -->
+
+# Runtime graph contracts
+
+Graph schema `1.0.0` retains the existing terminal node convention and canonical fingerprint. Graph schema `2.0.0` supports explicit terminal bindings, so components need not be named `generate` or `context`.
+
+Example additions to a pipeline YAML:
+
+```yaml
+pipeline:
+  id: example
+  version: 2.0.0
+  graph_schema_version: 2.0.0
+  # nodes and edges remain explicit as in the baseline graph
+  outputs:
+    answer: generate.answer
+    citations: generate.citations
+    abstained: generate.abstained
+    context: context.context
+```
+
+This fragment is not a standalone runnable graph. Answer, citations and abstained are required; context is optional. Bindings must name existing compatible output ports. Missing runtime values cause a traced failure instead of a fabricated successful answer.
+
+Loops execute their declared node order, including conditional skips, after initial node execution and before downstream consumers. Feedback must stay within one declared loop. Overlapping/reordered loops and premature downstream consumers are rejected. Iterations are additional passes after the initial graph pass. Exhaustion forces the declared fail/abstain outcome; abstention clears citations and context. Run manifests include `loop_outcomes` and schema version `1.1.0`.
+
+Authorization denials now persist a safe failed run with no node executions. Deadline checks precede the completed event, preventing a node from being marked both completed and failed for a single deadline overrun. Evidence/candidate port lists validate their element types.
+
+Verified by `tests/test_runtime_v2.py` and the complete deterministic regression suite. This does not yet provide provider cancellation, error-edge recovery, config-schema enforcement or a corrective strategy.
 
 
 ---

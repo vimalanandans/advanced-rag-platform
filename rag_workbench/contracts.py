@@ -52,9 +52,11 @@ class Loop(BaseModel):
 class PipelineGraph(BaseModel):
     model_config = ConfigDict(frozen=True)
 
+    schema_version: Literal["1.0.0", "2.0.0"] = "1.0.0"
     nodes: list[Node]
     edges: list[Edge]
     loops: list[Loop] = Field(default_factory=list)
+    outputs: dict[str, str] = Field(default_factory=dict)
 
 
 class Pipeline(BaseModel):
@@ -157,6 +159,7 @@ class NodeExecution(BaseModel):
 
 
 class RunManifest(BaseModel):
+    schema_version: str = "1.1.0"
     run_id: str
     trace_id: str
     tenant_id: str
@@ -171,6 +174,7 @@ class RunManifest(BaseModel):
     node_executions: list[NodeExecution] = Field(default_factory=list)
     status: Literal["completed", "failed"] = "completed"
     error: str | None = None
+    loop_outcomes: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class RunResult(BaseModel):
